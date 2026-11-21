@@ -2252,17 +2252,32 @@ test("Gig_View has the gig view on from power on", async () => {
 });
 
 // Text in the 11x18 font with its top left corner at x, y
-function largeTextAt(sim, x, y, text) {
+function largeTextAt(sim, x, y, text, inverted = false) {
   for (let i = 0; i < text.length; i++) {
     for (let row = 0; row < 18; row++) {
       for (let c = 0; c < 11; c++) {
         const want = Boolean((font11x18[(text.charCodeAt(i) - 32) * 18 + row] << c) & 0x8000);
-        if (lit(sim, x + i * 11 + c, y + row) !== want) return false;
+        if (lit(sim, x + i * 11 + c, y + row) !== (inverted ? !want : want)) return false;
       }
     }
   }
   return true;
 }
+
+test("the optional two-pixel offset moves only the bank name on the bank screen and in preview", async () => {
+  for (const offset of [0, 2]) {
+    const sim = simWithDemo(await flashWith(packDemo([
+      "b = d['Bank_Naming']; b.loc[b.Bank_Number == '0', 'Bank_Name_Large'] = 'Quad'",
+      "g = d['Global_Settings']; g.loc[g.Label == 'Bank_Preview', 'Value'] = '5'",
+      `g.loc[len(g)] = ['Bank_Name_Offset', '${offset ? "Y" : "N"}']`,
+    ].join("\n"))));
+    sim.run(10000);
+    assert.ok(largeTextAt(sim, offset, 0, "QUAD"));
+    assert.ok(infoLineIs(sim, "1/10>S01"));
+    tap(sim, 9);
+    assert.ok(largeTextAt(sim, 1 + offset, 1, "S01 ", true));
+  }
+});
 
 test("A+B goes on to the demo's second setlist, named, from its first song, and the pedal keeps it through a restart (before 1.33, one setlist)", async () => {
   const sim = simWithDemo();

@@ -620,6 +620,11 @@ static void top_texts(uint8_t bank, uint8_t over_place, const char *override, co
 	}
 }
 
+static uint8_t bank_name_offset(void){
+	uint8_t flags = pGlobalSettings[GLOBAL_SETTINGS_BANNER];
+	return flags != 0xFF && (flags & BANK_NAME_OFFSET) ? 2 : 0;
+}
+
 static void draw_top(uint8_t bank, uint8_t over_place, const char *override){
 	const char *text[DISPLAY_TEXT_PLACES];
 	top_texts(bank, over_place, override, text);
@@ -641,13 +646,12 @@ static void draw_top(uint8_t bank, uint8_t over_place, const char *override){
 
 	// Bank name, large 4 chars then small 8 chars on the same line
 	char own[9];
-	ssd1306_SetCursor(0, 0);
-	if(text[DISPLAY_TEXT_NAME][0]){
-		draw_text(0, 0, NAME_W, text[DISPLAY_TEXT_NAME], Font_11x18);
-	} else {
+	const char *name = text[DISPLAY_TEXT_NAME];
+	if(!name[0]){
 		bank_text(bank, false, own);
-		ssd1306_WriteString(own, Font_11x18, White);
+		name = own;
 	}
+	draw_text(bank_name_offset(), 0, NAME_W, name, Font_11x18);
 	ssd1306_SetCursor(INFO_X, 6);
 	if(text[DISPLAY_TEXT_INFO][0]){
 		draw_text(INFO_X, 6, SCREEN_SHOWN_W - INFO_X, text[DISPLAY_TEXT_INFO], Font_7x10);
@@ -865,6 +869,7 @@ void display_preview(uint8_t bankNumber){
 static void draw_preview(void){
 	refresh_pending = 0;
 	const uint8_t *pString;
+	uint8_t name_x = 1;
 	char direct[20];	// 4 large, 8 small
 	if(preview_bank & PREVIEW_DIRECT){
 		uint8_t first = (uint8_t)(((preview_bank & 0x7F) - 1) * DIRECT_GROUP);
@@ -874,6 +879,7 @@ static void draw_preview(void){
 	} else {
 		// Its own texts, live values filled in and padded to their places
 		char text[9];
+		name_x += bank_name_offset();
 		bank_text(preview_bank, false, text);
 		snprintf(direct, sizeof(direct), "%-4s", text);
 		bank_text(preview_bank, true, text);
@@ -882,7 +888,7 @@ static void draw_preview(void){
 	}
 	ssd1306_Fill(Black);
 	fill_rect(0, 0, SSD1306_WIDTH, ROW_TOP_Y - 3, White);
-	ssd1306_SetCursor(1, 1);
+	ssd1306_SetCursor(name_x, 1);
 	for(int i=0; i<4; i++){
 		ssd1306_WriteChar((char)pString[i], Font_11x18, Black);
 	}
