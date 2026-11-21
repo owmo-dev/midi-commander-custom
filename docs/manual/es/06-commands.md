@@ -535,8 +535,11 @@ Así, `Add 1` con un máximo de 2 cuenta 0, 1, 2, 0, 1… en pulsaciones sucesiv
 | `KeyMode` | Pregunta por | Comparado con |
 |---|---|---|
 | `Button on`, `Button off` | El estado de toggle de un botón del banco actual | `Number`: el botón, `1`–`4` o `A`–`D` |
+| `Button on`, `Button off` | Si el pulsador de banco está pisado (on) o suelto (off) al ejecutarse el comando | `Number`: `Bank Up` o `Bank Down` |
 | `Value =`, `Value <>`, `Value <`, `Value >=` | El valor de `Number`, de 1 a 8 | `OnValue` |
 | `Bank is`, `Bank is not` | En qué banco está la pedalera | `OnValue`: el número de banco |
+
+Para usar Bank Up como modificador, pon **Long press jumps** en 0 y deja vacía su lista Long. Elige **Button on → Bank Up** encima del comando alternativo y **Button off → Bank Up** encima del comando normal. La condición sigue al pulsador de inmediato. Si el comando alternativo envía un valor Off, suelta primero su botón y después Bank Up para enviar el Off correspondiente. Un toque corto en Bank Up sigue cambiando de banco.
 
 - Un `If` solo llega al comando que tiene justo debajo, con los comandos `Chan`, `Ramp`, `LFO` o `Seq` que le correspondan.
 - Un `If` debajo de otro exige los dos, así que puedes pedir dos condiciones a la vez.

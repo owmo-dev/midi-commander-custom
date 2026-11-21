@@ -535,8 +535,11 @@ So `Add 1` with a top of 2 counts 0, 1, 2, 0, 1… on successive presses. The va
 | `KeyMode` | Asks | Compared with |
 |---|---|---|
 | `Button on`, `Button off` | The toggle state of a button of the current bank | `Number`: the button, `1`–`4` or `A`–`D` |
+| `Button on`, `Button off` | Whether the bank switch is physically held (on) or released (off) when the command runs | `Number`: `Bank Up` or `Bank Down` |
 | `Value =`, `Value <>`, `Value <`, `Value >=` | The value in `Number`, 1 to 8 | `OnValue` |
 | `Bank is`, `Bank is not` | Which bank the pedal is on | `OnValue`: the bank number |
+
+To use Bank Up as Shift, set **Long press jumps** to 0 and leave its Long list empty. Choose **Button on → Bank Up** above the alternate command and **Button off → Bank Up** above the normal command. The condition follows the switch immediately. If the alternate command sends an Off value, release its button before lifting Bank Up to send the matching Off. A quick tap of Bank Up still navigates normally.
 
 - An `If` reaches only the command right below it, with whatever `Chan`, `Ramp`, `LFO` or `Seq` commands belong to that one.
 - An `If` under another asks for both, so two tests can be required at once.

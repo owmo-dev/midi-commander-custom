@@ -216,7 +216,11 @@
 #define IF_VALUE_GE		(5)
 #define IF_BANK			(6)	// byte 3 is the bank the pedal must be on
 #define IF_NOT_BANK		(7)
-#define IF_COUNT		(8)
+#define IF_BANK_UP_HELD		(8)	// live switch tests use only the test byte
+#define IF_BANK_UP_RELEASED	(9)
+#define IF_BANK_DOWN_HELD	(10)
+#define IF_BANK_DOWN_RELEASED	(11)
+#define IF_COUNT		(12)
 // Macro: same empty command type, low nibble 13. Runs another button's command
 // list in place, so a sequence wanted in many banks is stored once and called
 // with four bytes wherever it is needed. Byte 1 is the bank 0-31 (its top bit

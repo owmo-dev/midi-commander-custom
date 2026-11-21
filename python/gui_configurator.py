@@ -28,7 +28,7 @@ sys.path.insert(0, HERE)
 from lib.cmdBinaryPacker import (  # noqa: E402
     EXP_TARGETS, LFO_DIVISIONS, LFO_SHAPES, MEDIA_KEYS, RAMP_MAX_MS,
     MMC_COMMANDS, MMC_LOCATE_MAX, SONG_MODES, SONG_POSITION_MAX,
-    VAR_MODES, VAR_COUNT, VAR_DEFAULT_TOP, IF_TESTS, IF_BUTTON_TESTS, IF_VALUE_TESTS,
+    VAR_MODES, VAR_COUNT, VAR_DEFAULT_TOP, IF_BUTTONS, IF_TESTS, IF_BUTTON_TESTS, IF_VALUE_TESTS, IF_BANK_TESTS,
     SCENE_BUTTONS, SCENE_MODES, MACRO_LISTS, LISTEN_LOOKS, BUTTON_ACTIONS, CHAN_OUTPUTS, WAIT_BAR_MAX, NRPN_KINDS, NRPN_MAX, SYSEX_MODES, button_mode, command_type,
 )
 from lib.cheatSheet import cheat_sheet  # noqa: E402
@@ -686,6 +686,8 @@ class SlotEditor:
 
     def _remode(self, cmd_type: str, mode: str):
         """A menu that changes the fields shown: keep the choice across the rebuild."""
+        if cmd_type == "If" and "ifbutton" in self.widgets and mode in ("Button on", "Button off"):
+            self.initial["Number_(PC/CC/Note)"] = self.widgets["ifbutton"].value()
         self.initial = dict(self.initial, **{"KeyMode_(Key)": mode})
         self._rebuild(cmd_type)
 
@@ -1042,8 +1044,8 @@ class SlotEditor:
             test = IF_TESTS.index(w.get()) if w.get() in IF_TESTS else 0
             if test in IF_BUTTON_TESTS:
                 self._label("Button")
-                b = Option(self.params, list(SCENE_BUTTONS),
-                           clean(self.initial.get("Number_(PC/CC/Note)")) or "1", width=50)
+                b = Option(self.params, IF_BUTTONS,
+                           clean(self.initial.get("Number_(PC/CC/Note)")) or "1", width=115)
                 b.pack(side="left")
                 self.widgets["ifbutton"] = b
             elif test in IF_VALUE_TESTS:
@@ -1053,7 +1055,7 @@ class SlotEditor:
                 b.pack(side="left")
                 self.widgets["ifwhich"] = b
                 self._int("ifvalue", "Is", "OnValue_(CC/PB)", 0, 127)
-            else:
+            elif test in IF_BANK_TESTS:
                 self._int("ifvalue", "Bank", "OnValue_(CC/PB)", 0, 31)
             ctk.CTkLabel(
                 self.params,

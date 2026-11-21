@@ -2,6 +2,7 @@
 
 import os
 import sys
+import tempfile
 import unittest
 
 import pandas as pd
@@ -140,10 +141,11 @@ class ValuesAndConditionsTest(unittest.TestCase):
         self.assertEqual(value("VAR_MODE_COUNT"), len(cbp.VAR_MODES))
         self.assertEqual(value("VAR_COUNT"), cbp.VAR_COUNT)
         tests = ("IF_BUTTON_ON", "IF_BUTTON_OFF", "IF_VALUE_EQ", "IF_VALUE_NE",
-                 "IF_VALUE_LT", "IF_VALUE_GE", "IF_BANK", "IF_NOT_BANK")
+                 "IF_VALUE_LT", "IF_VALUE_GE", "IF_BANK", "IF_NOT_BANK",
+                 "IF_BANK_UP_HELD", "IF_BANK_UP_RELEASED", "IF_BANK_DOWN_HELD", "IF_BANK_DOWN_RELEASED")
         for i, name in enumerate(tests):
             self.assertEqual(value(name), i, name)
-        self.assertEqual(value("IF_COUNT"), len(cbp.IF_TESTS))
+        self.assertEqual(value("IF_COUNT"), len(cbp.IF_WIRE_TESTS))
 
     def test_firmware_answers_every_test(self):
         """if_holds has a case for each one, so none quietly lets a command by."""
@@ -151,7 +153,8 @@ class ValuesAndConditionsTest(unittest.TestCase):
             source = handle.read()
         holds = source.split("static bool if_holds", 1)[1].split("\n}", 1)[0]
         for name in ("IF_BUTTON_ON", "IF_BUTTON_OFF", "IF_VALUE_EQ", "IF_VALUE_NE",
-                     "IF_VALUE_LT", "IF_VALUE_GE", "IF_BANK", "IF_NOT_BANK"):
+                     "IF_VALUE_LT", "IF_VALUE_GE", "IF_BANK", "IF_NOT_BANK",
+                     "IF_BANK_UP_HELD", "IF_BANK_UP_RELEASED", "IF_BANK_DOWN_HELD", "IF_BANK_DOWN_RELEASED"):
             self.assertIn("case " + name + ":", holds, name)
 
     def test_value_round_trip(self):
@@ -191,7 +194,11 @@ class ValuesAndConditionsTest(unittest.TestCase):
                 ("Value <", "8", "64", [0x0C, 4, 7, 64]),
                 ("Value >=", "2", "127", [0x0C, 5, 1, 127]),
                 ("Bank is", "", "5", [0x0C, 6, 0, 5]),
-                ("Bank is not", "", "0", [0x0C, 7, 0, 0])):
+                ("Bank is not", "", "0", [0x0C, 7, 0, 0]),
+                ("Button on", "Bank Up", "", [0x0C, 8, 0, 0]),
+                ("Button off", "Bank Up", "", [0x0C, 9, 0, 0]),
+                ("Button on", "Bank Down", "", [0x0C, 10, 0, 0]),
+                ("Button off", "Bank Down", "", [0x0C, 11, 0, 0])):
             raw = self.pack("If", **{"KeyMode_(Key)": test,
                                      "Number_(PC/CC/Note)": number,
                                      "OnValue_(CC/PB)": value})
@@ -201,6 +208,17 @@ class ValuesAndConditionsTest(unittest.TestCase):
             self.assertEqual(back["KeyMode_(Key)"], test)
             self.assertEqual(back["Number_(PC/CC/Note)"], number, test)
             self.assertEqual(back["OnValue_(CC/PB)"], value, test)
+
+    def test_legacy_bank_switch_csv_uses_the_button_dropdown(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv") as csv:
+            csv.write("* Button_Settings\nA_CommandType,A_KeyMode_(Key),A_Number_(PC/CC/Note)\n")
+            for name in cbp.IF_BANK_SWITCH_FIELDS:
+                csv.write(f"If,{name},\n")
+            csv.flush()
+            rows = read_config_csv(csv.name)["Button_Settings"]
+        for (_, row), (name, fields) in zip(rows.iterrows(), cbp.IF_BANK_SWITCH_FIELDS.items()):
+            self.assertEqual((row["A_KeyMode_(Key)"], row["A_Number_(PC/CC/Note)"]), fields)
+            self.assertEqual(bytes(cbp.pack_row(row))[:4], self.pack("If", **{"KeyMode_(Key)": name}))
 
     def test_if_refuses_a_test_it_does_not_know(self):
         with self.assertRaises(ValueError):

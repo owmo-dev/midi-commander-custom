@@ -62,9 +62,10 @@ from lib.cmdBinaryPacker import (
     BUTTON_THIS_BANK,
     CMD_LISTEN_MODE,
     LISTEN_LOOKS,
-    IF_TESTS,
+    IF_WIRE_TESTS, IF_BANK_SWITCH_FIELDS,
     IF_BUTTON_TESTS,
     IF_VALUE_TESTS,
+    IF_BANK_TESTS,
     button_name,
     MMC_COMMANDS,
     MMC_LOCATE,
@@ -361,13 +362,16 @@ def unpack_command(raw: bytes, cycle_labels=None) -> dict:
     elif cmd_type == CMD_NO_CMD_NIBBLE and (b0 & 0x0F) == CMD_IF_MODE:
         cmd["CommandType"] = "If"
         test = b1 & 0x7F
-        cmd["KeyMode_(Key)"] = IF_TESTS[test] if test < len(IF_TESTS) else IF_TESTS[0]
-        if test in IF_BUTTON_TESTS:
+        mode = IF_WIRE_TESTS[test] if test < len(IF_WIRE_TESTS) else IF_WIRE_TESTS[0]
+        cmd["KeyMode_(Key)"] = mode
+        if mode in IF_BANK_SWITCH_FIELDS:
+            cmd["KeyMode_(Key)"], cmd["Number_(PC/CC/Note)"] = IF_BANK_SWITCH_FIELDS[mode]
+        elif test in IF_BUTTON_TESTS:
             cmd["Number_(PC/CC/Note)"] = button_name(b2 & 0x07)
         elif test in IF_VALUE_TESTS:
             cmd["Number_(PC/CC/Note)"] = str((b2 & 0x07) + 1)
             cmd["OnValue_(CC/PB)"] = str(b3 & 0x7F)
-        else:
+        elif test in IF_BANK_TESTS:
             cmd["OnValue_(CC/PB)"] = str(b3 & 0x7F)
     elif cmd_type == CMD_NO_CMD_NIBBLE and (b0 & 0x0F) == CMD_MACRO_MODE and b3:
         cmd["CommandType"] = "Button"

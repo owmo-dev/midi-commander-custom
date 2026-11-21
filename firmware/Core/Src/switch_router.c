@@ -2643,6 +2643,12 @@ static bool if_holds(const uint8_t *pRom){
 	case IF_VALUE_GE:	return sw_get_value(what) >= value;
 	case IF_BANK:		return switch_current_page == value;
 	case IF_NOT_BANK:	return switch_current_page != value;
+	case IF_BANK_UP_HELD:
+	case IF_BANK_UP_RELEASED:
+		return switch_down(SW_5_GPIO_Port, SW_5_Pin) == (test == IF_BANK_UP_HELD);
+	case IF_BANK_DOWN_HELD:
+	case IF_BANK_DOWN_RELEASED:
+		return switch_down(SW_E_GPIO_Port, SW_E_Pin) == (test == IF_BANK_DOWN_HELD);
 	default:		return true;
 	}
 }

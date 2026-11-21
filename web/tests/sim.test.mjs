@@ -302,6 +302,49 @@ test("Bank Up moves on from the index bank", async () => {
   assert.ok(names.some((c) => Number(c[0]) === s.bank && c[1] === s.bankName), `bank ${s.bank} is ${s.bankName} in the demo`);
 });
 
+test("If reads Bank Up and Bank Down on both press and release", async () => {
+  for (const [name, id] of [["Bank Down", 8], ["Bank Up", 9]]) {
+    const sim = simWithDemo(await flashWith(packDemo([
+      "d.pop('LongPress_Settings')", // HOME button 1 should respond immediately
+      "g = d['Global_Settings']",
+      "g.loc[g.Label == 'Bank_Jump_Step', 'Value'] = '0'",
+      "g.loc[g.Label == 'Bank_Switch_Mode', 'Value'] = 'Bank'",
+      "b = d['Button_Settings']; row = (b.Bank_Number == '0') & (b.Button_Identifier == '1')",
+      "for slot, test in [('A','Button on'), ('C','Button off')]:",
+      `    b.loc[row, [slot+'_CommandType', slot+'_KeyMode_(Key)', slot+'_Number_(PC/CC/Note)']] = ['If', test, '${name}']`,
+      "for slot, cc in [('B','45'), ('D','35')]:",
+      "    b.loc[row, [slot+'_CommandType', slot+'_Number_(PC/CC/Note)', slot+'_OnValue_(CC/PB)', slot+'_OffValue_(CC)']] = ['CC', cc, '127', '0']",
+    ].join("\n"))));
+    const seen = watch(sim);
+    const usb = () => seen.splice(0).filter((m) => m.startsWith("USB b0"));
+    tap(sim, 0);
+    assert.deepEqual(usb(), ["USB b0 23 7f", "USB b0 23 00"]);
+    sim.footswitch(id, true);
+    sim.run(40);
+    tap(sim, 0);
+    assert.deepEqual(usb(), ["USB b0 2d 7f", "USB b0 2d 00"], "already held before the long threshold");
+    sim.footswitch(0, true);
+    sim.run(40);
+    assert.deepEqual(usb(), ["USB b0 2d 7f"]);
+    sim.footswitch(id, false);
+    sim.run(40);
+    sim.footswitch(0, false);
+    sim.run(40);
+    assert.deepEqual(usb(), ["USB b0 23 00"], "release evaluates the current switch state");
+    const pedal = await Pedal.open(sim.access);
+    assert.equal((await pedal.getState()).bank, 0);
+    sim.footswitch(id, true);
+    sim.run(40);
+    sim.footswitch(0, true);
+    sim.run(40);
+    sim.footswitch(0, false);
+    sim.run(40);
+    sim.footswitch(id, false);
+    sim.run(100);
+    assert.notEqual((await pedal.getState()).bank, 0, "a quick modifier press still navigates");
+  }
+});
+
 test("zero bank jump keeps the current page and runs only the bank switch long list", async () => {
   for (const [mode, preview] of [["Bank", 0], ["Bank+MIDI", 0], ["Bank+MIDI", 5]]) {
     const sim = simWithDemo(await flashWith(packDemo([

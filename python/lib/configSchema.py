@@ -17,7 +17,7 @@ A field is a dict:
 
 import lib.channelPorts as channelPorts
 from lib.cmdBinaryPacker import (
-    BUTTON_ACTIONS, CHAN_OUTPUTS, EXP_TARGETS, HID_SPECIAL_KEYS, IF_BANK_TESTS, IF_BUTTON_TESTS,
+    BUTTON_ACTIONS, CHAN_OUTPUTS, EXP_TARGETS, HID_SPECIAL_KEYS, IF_BUTTONS, IF_BANK_TESTS, IF_BUTTON_TESTS,
     IF_TESTS, IF_VALUE_TESTS, LFO_DIVISIONS, LFO_SHAPES, LISTEN_LOOKS, MACRO_LISTS, MEDIA_KEYS,
     MMC_COMMANDS, MMC_LOCATE_MAX, NRPN_KINDS, NRPN_MAX, RAMP_MAX_MS, SCENE_BUTTONS, SCENE_MODES, SONG_MODES,
     SONG_POSITION_MAX, SYSEX_MODES, VAR_COUNT, VAR_DEFAULT_TOP, VAR_MODES, WAIT_BAR_MAX,
@@ -338,7 +338,7 @@ COMMAND_SPECS = {
                          _f(OFF, "Top", _int(0, 127), default=str(VAR_DEFAULT_TOP))],
               "hint": "the pedal's own values, all zero at power on; past the top it starts again"},
     "If": {"fields": [_f(MODE, "Only if", _choice(IF_TESTS)),
-                      _f(NUM, "Button", _choice(SCENE_BUTTONS), default="1",
+                      _f(NUM, "Button", _choice(IF_BUTTONS), default="1",
                          **_when(MODE, *[IF_TESTS[i] for i in IF_BUTTON_TESTS])),
                       _f(NUM, "Value", _choice([str(i) for i in range(1, VAR_COUNT + 1)]), default="1",
                          **_when(MODE, *[IF_TESTS[i] for i in IF_VALUE_TESTS])),

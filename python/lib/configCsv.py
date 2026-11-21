@@ -9,6 +9,8 @@ import io
 
 import pandas as pd
 
+from lib.cmdBinaryPacker import IF_BANK_SWITCH_FIELDS
+
 PAD = "," * 50
 
 
@@ -45,6 +47,14 @@ def read_config_csv(path: str) -> dict:
         ).dropna(how="all")
         df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
         df.columns = df.columns.str.strip()
+        # Older CSVs put the bank switch and its state together in KeyMode.
+        for mode in (col for col in df.columns if col.endswith("KeyMode_(Key)")):
+            prefix = mode[:-len("KeyMode_(Key)")]
+            command = prefix + "CommandType"
+            if command in df:
+                legacy = df[mode].isin(IF_BANK_SWITCH_FIELDS) & df[command].eq("If")
+                for row, wire_name in df.loc[legacy, mode].items():
+                    df.loc[row, [mode, prefix + "Number_(PC/CC/Note)"]] = IF_BANK_SWITCH_FIELDS[wire_name]
         # A row cut short (the trailing commas go above) leaves its last cells
         # as None in pandas 2 and NaN in 3: NaN for all, as the tools expect
         sections[name] = df.mask(df.isna())

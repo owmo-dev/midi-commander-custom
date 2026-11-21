@@ -122,11 +122,21 @@ VAR_MODES = ["Set", "Add", "Sub"]
 VAR_COUNT = 8
 VAR_DEFAULT_TOP = 127
 # If: the command right below it only goes out when the test holds, and an If
-# under another asks for both. Byte 1 is the test, an index into IF_TESTS, byte
+# under another asks for both. Byte 1 is the test, an index into IF_WIRE_TESTS, byte
 # 2 the button or stored value it looks at, byte 3 what it is compared with.
 CMD_IF_MODE = 12
 IF_TESTS = ["Button on", "Button off", "Value =", "Value <>", "Value <",
             "Value >=", "Bank is", "Bank is not"]
+# The first editor used these wire tests as standalone CSV modes.
+IF_BANK_SWITCH_FIELDS = {
+    "Bank Up held": ("Button on", "Bank Up"),
+    "Bank Up released": ("Button off", "Bank Up"),
+    "Bank Down held": ("Button on", "Bank Down"),
+    "Bank Down released": ("Button off", "Bank Down"),
+}
+IF_WIRE_TESTS = IF_TESTS + list(IF_BANK_SWITCH_FIELDS)
+IF_BANK_SWITCH_CODES = {(mode, button.upper()): IF_WIRE_TESTS.index(name)
+                        for name, (mode, button) in IF_BANK_SWITCH_FIELDS.items()}
 IF_BUTTON_TESTS = (0, 1)
 IF_VALUE_TESTS = (2, 3, 4, 5)
 IF_BANK_TESTS = (6, 7)
@@ -175,6 +185,7 @@ PC_FORCE = 0x85
 CCINC_REPEAT_BIT = 0x80
 # Button order of a scene string, one character each: + on, - off, . leave
 SCENE_BUTTONS = "1234ABCD"
+IF_BUTTONS = [*SCENE_BUTTONS, "Bank Up", "Bank Down"]
 # What a Scene does: Recall sets its buttons; Save stores the toggles of the
 # bank as they are now into the first scene of a button's list
 SCENE_MODES = ["Recall", "Save", "Save Long", "Save Double"]
@@ -988,7 +999,7 @@ def cmd_var(cmd):
 def cmd_if(cmd):
     """Hold back the command right below unless the test holds.
 
-    KeyMode is the test (IF_TESTS), Number the button ("1"-"4", "A"-"D") or the
+    KeyMode is the test (IF_TESTS), Number the button ("1"-"4", "A"-"D", Bank Up or Bank Down) or the
     stored value 1-8 it looks at, and OnValue what it is compared with: a value
     0-127, or the bank for the bank tests. An If under another asks for both,
     and the test is made again on the release, so a momentary command held back
@@ -997,17 +1008,22 @@ def cmd_if(cmd):
     test_text = str(cmd.get("KeyMode_(Key)", "")).strip()
     if test_text in ("", "nan"):
         test_text = IF_TESTS[0]
-    tests = {t.upper(): i for i, t in enumerate(IF_TESTS)}
+    tests = {t.upper(): i for i, t in enumerate(IF_WIRE_TESTS)}
     if test_text.upper() not in tests:
         raise ValueError(f"If must be one of {', '.join(IF_TESTS)}, not {test_text!r}")
     test = tests[test_text.upper()]
     what = value = 0
     if test in IF_BUTTON_TESTS:
-        what = button_index(cmd.get("Number_(PC/CC/Note)", "1"))
+        button = str(cmd.get("Number_(PC/CC/Note)", "1")).strip()
+        switch_test = IF_BANK_SWITCH_CODES.get((IF_TESTS[test], button.upper()))
+        if switch_test is None:
+            what = button_index(button)
+        else:
+            test = switch_test
     elif test in IF_VALUE_TESTS:
         what = max(1, min(VAR_COUNT, safe_int(cmd.get("Number_(PC/CC/Note)", 1) or 1))) - 1
         value = max(0, min(127, safe_int(cmd.get("OnValue_(CC/PB)", 0))))
-    else:
+    elif test in IF_BANK_TESTS:
         value = max(0, min(31, safe_int(cmd.get("OnValue_(CC/PB)", 0))))
     return [CMD_NO_CMD_NIBBLE | CMD_IF_MODE, test, what, value]
 
