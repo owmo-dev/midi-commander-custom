@@ -2381,14 +2381,14 @@ class MidiCommanderGUI(ctk.CTk):
             self.off_after_hold = Check(flags_frame, text="Send Off only after a hold",
                                         checked=is_yes(current.get("Off_After_Hold")))
             self.off_after_hold.pack(side="left", padx=(12, 0))
-            flags_frame = ctk.CTkFrame(self.cmd_editor, fg_color="transparent")
-            flags_frame.pack(anchor="w", padx=10, pady=(0, 8))
             self.tempo_flash = Check(flags_frame, text="Flash at the tempo",
                                      checked=is_yes(current.get("Tempo_Flash")))
             self.tempo_flash.pack(side="left", padx=(12, 0))
+            flags_frame = ctk.CTkFrame(self.cmd_editor, fg_color="transparent")
+            flags_frame.pack(anchor="w", padx=10, pady=(0, 8))
             self.button_global = Check(flags_frame, text="Global",
                                        checked=is_yes(current.get("Global")))
-            self.button_global.pack(side="left", padx=(12, 0))
+            self.button_global.pack(side="left")
             self.reset_on_bank = Check(flags_frame, text="Reset on bank change",
                                        checked=is_yes(current.get("Reset_On_Bank")))
             self.reset_on_bank.pack(side="left", padx=(12, 0))
