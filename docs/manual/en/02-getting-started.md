@@ -17,7 +17,7 @@ Flashing firmware does not erase your configuration, and the pedal's bootloader 
 
 ## 1. Flash the firmware
 
-The first time, the pedal has to be put in its update mode by hand. The firmware comes as a ready built `.dfu` file attached to the [latest release](https://github.com/Charles5150/midi-commander-custom/releases/latest). Older images are on the [releases](https://github.com/Charles5150/midi-commander-custom/releases) page. You can build the image yourself instead, as [CONTRIBUTING](../../../CONTRIBUTING.md) explains; both routes end in the same place.
+The first time, the pedal has to be put in its update mode by hand. The firmware comes as a ready built `.dfu` file attached to the [latest release](https://github.com/owmo-dev/midi-commander-custom/releases/latest). Older images are on the [releases](https://github.com/owmo-dev/midi-commander-custom/releases) page. You can build the image yourself instead, as [CONTRIBUTING](../../../CONTRIBUTING.md) explains; both routes end in the same place.
 
 1. Install `dfu-util`:
    - macOS: `brew install dfu-util`;
@@ -53,7 +53,7 @@ Once the tools of step 2 are installed, `Update_Firmware.py` can do steps 3 to 5
 
 The configurator and the command line tools are Python programs in this repository.
 
-1. **Get the files.** Download [the repository as a ZIP](https://github.com/Charles5150/midi-commander-custom/archive/refs/heads/main.zip) and unzip it where you like, or, with git, `git clone https://github.com/Charles5150/midi-commander-custom.git`.
+1. **Get the files.** Download [the repository as a ZIP](https://github.com/owmo-dev/midi-commander-custom/archive/refs/heads/main.zip) and unzip it where you like, or, with git, `git clone https://github.com/owmo-dev/midi-commander-custom.git`.
 2. **Install Python 3.12.**
    - macOS and Windows: from [python.org](https://www.python.org/downloads/). Its installer comes with Tk, which the configurator's window needs.
    - Linux: your distribution's Python 3 and, on Debian or Ubuntu, `sudo apt install python3-venv python3-tk`.

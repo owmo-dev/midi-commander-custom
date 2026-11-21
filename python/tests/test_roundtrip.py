@@ -341,6 +341,16 @@ class RoundTripTest(unittest.TestCase):
         d = unpacker.unpack_command(bytes(p[4:8]))
         self.assertEqual((d["KeyMode_(Key)"], d["OnValue_(CC/PB)"]), ("Up", "4"))
 
+    def test_bank_name_offset_round_trip(self):
+        settings = self.sections["Global_Settings"].copy()
+        settings.loc[len(settings)] = ["Bank_Name_Offset", "Y"]
+        packed = pack_config({**self.sections, "Global_Settings": settings})
+        expected = bytearray(self.packed)
+        expected[46] |= 0x40
+        self.assertEqual(bytes(packed), bytes(expected))
+        values = unpacker.unpack_global_settings(packed).set_index("Label")["Value"]
+        self.assertEqual(values["Bank_Name_Offset"], "Y")
+
     def test_bank_jump_step(self):
         sections = read_config_csv(SAMPLE_CSV)
         g = sections["Global_Settings"].copy()

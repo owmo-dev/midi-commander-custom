@@ -2,6 +2,17 @@
 
 Firmware versions are shown on the display at boot and reported by the tools.
 
+## 1.45.1 (OWMO fork)
+
+This fork release builds on firmware 1.45. Existing CSVs can be loaded as before.
+
+- **Send Off only after a hold.** A short-press CC can send its On value once on press and reserve its Off value for release after the long-press threshold. [Button settings](docs/manual/en/05-buttons.md)
+- **Long press jumps.** Set it to `0` to stay on the current bank during a bank-switch hold. In **Bank+MIDI**, the configured long-press commands still run. [Bank switches](docs/manual/en/04-banks.md)
+- **Bank switches as modifiers.** The `If` command’s **Button on** and **Button off** tests can read whether **Bank Up** or **Bank Down** is physically pressed or released. [Conditional commands](docs/manual/en/06-commands.md)
+- **Shift bank name right.** This optional global setting moves the bank name two pixels right on the bank screen and in bank preview. [Global settings](docs/manual/en/12-configuration-file.md#global_settings)
+
+## Upstream history
+
 - **In time with an Ableton Link session.** Live, Bitwig, Loopy Pro, AUM and many iPad apps share their tempo over the network with Ableton Link and send no MIDI clock, so the pedal's LFOs, grid and recorded runs could not follow them (#198). The new `python/Link_Clock.py` joins the session and sends the pedal 24 clocks a beat at its tempo, whoever changes it. Its first clock comes on a sixteenth, after a Song Position that puts the pedal's bar where the session's is (`--quantum`, 4 by default); with Link's Start Stop Sync on, the session's play sends a Start on its next bar, its stop a Stop, and joining a playing session a Continue; `--no-transport` sends the clock alone, `--port` another output, and `--stats` how steady the clock is. It needs `aalink`, Ableton Link for Python, which is GPL-3.0 and so installed apart, not among the requirements. The tools only; no new firmware. Tried on a Mac with a second Link program as the band and a virtual MIDI port for the pedal: the bridge followed the session from 120 to 140 BPM, the Start came on the bar after play and the Stop at once, the clocks went out on average 0.5 to 1 ms from where the tempo puts them, now and then 2 to 4 ms; not yet tried with the pedal. Eleven new Python tests, and one on the simulated pedal feeds it the bridge's bytes: it shows `EXT 100`, and its bar and beat match the session's, joined half way through a bar and after a new Start. 788 Python and 87 web tests pass. Closes #198. → [Link_Clock](docs/manual/en/13-command-line-tools.md#link_clock-in-time-with-an-ableton-link-session)
 
 - **The desktop configurator on a small screen.** On a 1366×768 laptop the Expression tab ran off the bottom of the window, pedal 2's settings out of reach with no way to scroll to them (#206); the Virtual Pedal tab cut off its bottom row of switches and the self-test the same way. Both tabs now scroll, with the scroll bar or the mouse wheel, as the other tall tabs already did. The desktop configurator only; no new firmware. Seen at 1366×728, the screen less a taskbar, before and after: pedal 2's last row and the self-test button now come into view. A new test on the window checks it at that size; 777 Python tests pass, and the 17 on the window. Closes #206.
