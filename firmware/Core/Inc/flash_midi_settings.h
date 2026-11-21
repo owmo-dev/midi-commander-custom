@@ -102,6 +102,8 @@ extern uint8_t *pCombos;		// Two switch combinations, COMBO_STRIDE bytes each
 #define LABEL_RESET_BIT			(0x80)
 #define LABEL_INSTANT_BIT		(0x80)
 #define LABEL_RELOAD_BIT		(0x80)
+// In the fourth character, the flag means CC Off only after a hold.
+#define LABEL_OPTION_BIT		(0x80)
 
 // Button LED modes, one byte per button indexed by (bank * 8 + switch).
 // Bits 0-1: 0 = Normal, 1 = Reverse, 2 = AlwaysOn. Bit 2: flash at the tempo,

@@ -146,16 +146,13 @@ def _ascii(chunk: bytes) -> str:
 
 
 def _label(chunk: bytes) -> tuple:
-    """(Label, Reset_On_Bank, Instant_Press, Reload_When_Lit) from a button's
-    label: bit 7 of its first character, which ASCII leaves free, is the
-    reset, that of its second the instant press and that of its third the
-    reload when lit. Erased flash is none."""
+    """Display text and the four button options in the ASCII high bits."""
     if not chunk or chunk[0] == 0xFF:
-        return _ascii(chunk), "", "", ""
+        return _ascii(chunk), "", "", "", ""
 
     def bit(i):
         return "Y" if len(chunk) > i and chunk[i] != 0xFF and chunk[i] & 0x80 else ""
-    return _ascii(bytes(b & 0x7F for b in chunk[:3]) + chunk[3:]), bit(0), bit(1), bit(2)
+    return _ascii(bytes(b & 0x7F for b in chunk)), bit(0), bit(1), bit(2), bit(3)
 
 
 def _led_mode_name(value: int) -> str:
@@ -545,7 +542,7 @@ def unpack_button_settings(data: bytes) -> pd.DataFrame:
     for slot in SLOT_NAMES:
         columns += [f"{slot}_{f}" for f in CMD_FIELDS]
     columns += ["Light_Mode", "Group", "Momentary_Hold", "Tempo_Flash", "Global",
-                "Reset_On_Bank", "Instant_Press", "Reload_When_Lit"]
+                "Reset_On_Bank", "Instant_Press", "Reload_When_Lit", "Off_After_Hold"]
     columns += [f"{slot}_KeyMode_(Key)" for slot in SLOT_NAMES]
 
     cycle_labels = unpack_cycle_labels(data)
@@ -557,7 +554,7 @@ def unpack_button_settings(data: bytes) -> pd.DataFrame:
         for btn_index, btn_id in enumerate(BUTTON_IDS):
             button_number = bank * len(BUTTON_IDS) + btn_index
             label_start = LABELS_OFFSET + button_number * LABEL_LEN
-            label, reset, instant, reload = _label(data[label_start : label_start + LABEL_LEN])
+            label, reset, instant, reload, off_after_hold = _label(data[label_start : label_start + LABEL_LEN])
             row = {
                 "Bank_Number": str(bank),
                 "Button_Identifier": btn_id,
@@ -566,6 +563,7 @@ def unpack_button_settings(data: bytes) -> pd.DataFrame:
                 "Reset_On_Bank": reset,
                 "Instant_Press": instant,
                 "Reload_When_Lit": reload,
+                "Off_After_Hold": off_after_hold,
             }
             for slot_index, slot in enumerate(SLOT_NAMES):
                 offset = (

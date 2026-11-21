@@ -243,7 +243,7 @@ def _same(a, b, name) -> bool:
             extras = [cbp.pack_button_led_modes([_cell(row.get("Light_Mode")) or "Normal"],
                                                 [_cell(row.get("Group"))], [_cell(row.get("Momentary_Hold"))],
                                                 [_cell(row.get("Tempo_Flash"))], [_cell(row.get("Global"))])]
-            extras += [cbp._yes_no(_cell(row.get(c)), c) for c in ("Reset_On_Bank", "Instant_Press", "Reload_When_Lit")]
+            extras += [cbp._yes_no(_cell(row.get(c)), c) for c in ("Reset_On_Bank", "Instant_Press", "Reload_When_Lit", "Off_After_Hold")]
         return packed, labels, _cell(row.get(LABELS.get(name, ""))), extras
     return what(a) == what(b)
 

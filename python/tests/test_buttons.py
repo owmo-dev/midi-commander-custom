@@ -482,16 +482,22 @@ class ReloadWhenLitTest(unittest.TestCase):
                          [("1", b, f"TRK{n}") for n, b in enumerate("ABCD", 1)])
         self.assertTrue((lit["Group"] == "1").all())
 
-    def test_all_three_bits_round_trip(self):
+    def test_all_four_label_bits_round_trip(self):
         sections = read_config_csv(DEMO_CSV)
         df = sections["Button_Settings"].copy()
         i = self._index(df, 11, "4")             # BOST, reset on bank change
         df.at[i, "Instant_Press"] = "Y"
         df.at[i, "Reload_When_Lit"] = "Y"
-        _, _, decoded, *_ = unpacker.unpack_config(pack_config({**sections, "Button_Settings": df}))
+        base = pack_config({**sections, "Button_Settings": df})
+        df.loc[i, "Off_After_Hold"] = "Y"
+        packed = pack_config({**sections, "Button_Settings": df})
+        at = layout.LABELS_OFFSET + (11 * 8 + layout.BUTTON_IDS.index("4")) * layout.LABEL_LEN + 3
+        self.assertEqual(packed[at], base[at] | packer.LABEL_OFF_AFTER_HOLD_BIT)
+        self.assertEqual(packed[:at] + packed[at + 1:], base[:at] + base[at + 1:])
+        _, _, decoded, *_ = unpacker.unpack_config(packed)
         row = decoded[(decoded["Bank_Number"] == "11") & (decoded["Button_Identifier"] == "4")]
         self.assertEqual(row["Label"].iloc[0], "BOST")
-        for col in ("Reset_On_Bank", "Instant_Press", "Reload_When_Lit"):
+        for col in ("Reset_On_Bank", "Instant_Press", "Reload_When_Lit", "Off_After_Hold"):
             self.assertEqual(row[col].iloc[0], "Y", col)
 
     def test_older_configurations_and_erased_flash_have_none(self):
@@ -499,8 +505,10 @@ class ReloadWhenLitTest(unittest.TestCase):
         self.assertNotIn("Reload_When_Lit", sections["Button_Settings"].columns)
         _, _, decoded, *_ = unpacker.unpack_config(pack_config(sections))
         self.assertTrue((decoded["Reload_When_Lit"] == "").all())
+        self.assertTrue((decoded["Off_After_Hold"] == "").all())
         _, _, df, *_ = unpacker.unpack_config(bytes([0xFF]) * layout.CONFIG_SIZE)
         self.assertTrue((df["Reload_When_Lit"] == "").all())
+        self.assertTrue((df["Off_After_Hold"] == "").all())
 
     def test_values(self):
         for cell, want in (("", False), (float("nan"), False), ("N", False), ("Y", True), ("yes", True)):

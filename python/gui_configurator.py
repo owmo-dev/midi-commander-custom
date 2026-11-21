@@ -1762,7 +1762,7 @@ class MidiCommanderGUI(ctk.CTk):
             columns += [f"{slot}_{f}" for f in CMD_FIELDS]
         if with_extras:
             columns += ["Light_Mode", "Group", "Momentary_Hold", "Tempo_Flash", "Global",
-                        "Reset_On_Bank", "Instant_Press", "Reload_When_Lit"]
+                        "Reset_On_Bank", "Instant_Press", "Reload_When_Lit", "Off_After_Hold"]
 
         out = []
         for b in range(NUM_BANKS):
@@ -1783,6 +1783,7 @@ class MidiCommanderGUI(ctk.CTk):
                     row["Reset_On_Bank"] = ""
                     row["Instant_Press"] = ""
                     row["Reload_When_Lit"] = ""
+                    row["Off_After_Hold"] = ""
                 if src is not None:
                     for c in columns:
                         if c in src.index and c not in ("Bank_Number", "Button_Identifier"):
@@ -2338,6 +2339,7 @@ class MidiCommanderGUI(ctk.CTk):
         self.light_mode = None
         self.group = None
         self.momentary_hold = None
+        self.off_after_hold = None
         self.tempo_flash = None
         self.button_global = None
         self.reset_on_bank = None
@@ -2376,6 +2378,11 @@ class MidiCommanderGUI(ctk.CTk):
             self.momentary_hold = Check(flags_frame, text="Momentary when held",
                                         checked=is_yes(current.get("Momentary_Hold")))
             self.momentary_hold.pack(side="left")
+            self.off_after_hold = Check(flags_frame, text="Send Off only after a hold",
+                                        checked=is_yes(current.get("Off_After_Hold")))
+            self.off_after_hold.pack(side="left", padx=(12, 0))
+            flags_frame = ctk.CTkFrame(self.cmd_editor, fg_color="transparent")
+            flags_frame.pack(anchor="w", padx=10, pady=(0, 8))
             self.tempo_flash = Check(flags_frame, text="Flash at the tempo",
                                      checked=is_yes(current.get("Tempo_Flash")))
             self.tempo_flash.pack(side="left", padx=(12, 0))
@@ -2407,7 +2414,9 @@ class MidiCommanderGUI(ctk.CTk):
                 "makes it momentary.",
                 "Held, it goes back to where it was when you let go: on only while held, or off "
                 "only while held if it was on. For toggle buttons without a long press list "
-                "(which would take the hold) and without Cycle commands.",
+                "(which would take the hold) and without Cycle commands. "
+                "Send Off only after a hold applies independently to non-toggle CCs in the "
+                "short list. A tap sends On once. Holding for Long_Press_ms adds Off on release.",
                 wraplength=720,
             ).pack(anchor="w", padx=10, pady=(0, 4))
             Help(
@@ -2528,6 +2537,8 @@ class MidiCommanderGUI(ctk.CTk):
             self.df_buttons.at[idx, "Group"] = "" if g == "None" else g
         if self.momentary_hold is not None:
             self.df_buttons.at[idx, "Momentary_Hold"] = "Y" if self.momentary_hold.value() == "Y" else ""
+        if self.off_after_hold is not None:
+            self.df_buttons.at[idx, "Off_After_Hold"] = "Y" if self.off_after_hold.value() == "Y" else ""
         if self.tempo_flash is not None:
             self.df_buttons.at[idx, "Tempo_Flash"] = "Y" if self.tempo_flash.value() == "Y" else ""
         if self.button_global is not None:

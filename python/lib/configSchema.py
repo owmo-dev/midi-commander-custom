@@ -189,6 +189,7 @@ BUTTON_FIELDS = [
     {"col": "Light_Mode", "label": "LED", **_choice(LED_MODES)},
     {"col": "Group", "label": "Exclusive group", **_choice(BUTTON_GROUPS, blank="None")},
     {"col": "Momentary_Hold", "label": "Momentary when held", "kind": "check", "off": ""},
+    {"col": "Off_After_Hold", "label": "Send Off only after a hold", "kind": "check", "off": ""},
     {"col": "Tempo_Flash", "label": "Flash at the tempo", "kind": "check", "off": ""},
     {"col": "Global", "label": "Global", "kind": "check", "off": ""},
     {"col": "Reset_On_Bank", "label": "Reset on bank change", "kind": "check", "off": ""},

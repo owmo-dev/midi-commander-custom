@@ -121,6 +121,18 @@ class GuiTest(unittest.TestCase):
         self.assertIsNone(app.self_test)
         app.live = None
 
+    def test_off_after_hold_checkbox(self):
+        app = self.app
+        app.load_csv(CSVS[0])
+        app.load_button_commands(0, "1")
+        self.assertEqual(app.off_after_hold.value(), "N")
+        app.off_after_hold.select()
+        app.apply_button_changes(silent=True)
+        app.load_button_commands(1, "2")
+        self.assertEqual(app.off_after_hold.value(), "N")
+        app.load_button_commands(0, "1")
+        self.assertEqual(app.off_after_hold.value(), "Y")
+
     def test_a_command_from_the_device_dictionary(self):
         import lib.deviceDictionary as dd
         self.app.load_csv(os.path.join(ROOT, "templates", "HX_Stomp.csv"))

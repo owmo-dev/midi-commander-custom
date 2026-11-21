@@ -160,6 +160,56 @@ test("the demo's index bank: switch 1 goes to the looper bank, where it sends CC
   assert.deepEqual(seen.splice(0), ["USB b0 01 00", "DIN b0 01 00"], "a toggle: off again");
 });
 
+test("momentary toggle restoration does not replay a plain CC on the same button", async () => {
+  const sim = simWithDemo(await flashWith(packDemo([
+    "d.pop('LongPress_Settings')",  // HOME button 1 normally changes configuration on hold
+    "b = d['Button_Settings']",
+    "row = (b.Bank_Number == '0') & (b.Button_Identifier == '1')",
+    "b.loc[row, ['Momentary_Hold', 'Off_After_Hold']] = ['Y', 'Y']",
+    "b.loc[row, ['A_CommandType', 'A_Number_(PC/CC/Note)', 'A_OnValue_(CC/PB)', 'A_OffValue_(CC)']] = ['CC', '35', '127', '0']",
+    "b.loc[row, ['B_CommandType', 'B_Number_(PC/CC/Note)', 'B_OnValue_(CC/PB)', 'B_OffValue_(CC)', 'B_Toggle_(CC/PB/Note)']] = ['CC', '36', '90', '7', 'Y']",
+  ].join("\n"))));
+  const seen = watch(sim);
+  const usb = () => seen.splice(0).filter((m) => m.startsWith("USB"));
+  sim.footswitch(0, true);
+  sim.run(50);
+  assert.deepEqual(usb(), ["USB b0 23 7f", "USB b0 24 5a"]);
+  sim.run(600);
+  assert.deepEqual(usb(), []);
+  sim.footswitch(0, false);
+  sim.run(100);
+  assert.deepEqual(usb(), ["USB b0 23 00", "USB b0 24 07"]);
+});
+
+test("CC Off only after a hold uses the physical release time", async () => {
+  const sim = simWithDemo(await flashWith(packDemo([
+    "d.pop('LongPress_Settings')",  // HOME button 1 normally changes configuration on hold
+    "b = d['Button_Settings']",
+    "row = (b.Bank_Number == '0') & (b.Button_Identifier == '1')",
+    "b.loc[row, ['A_CommandType', 'A_Number_(PC/CC/Note)', 'A_OnValue_(CC/PB)', 'A_OffValue_(CC)', 'Off_After_Hold']] = ['CC', '35', '127', '0', 'Y']",
+    "b.loc[row, ['B_CommandType', 'B_Duration_(Note/PB)']] = ['Wait', '600']",
+    "b.loc[row, ['C_CommandType', 'C_Number_(PC/CC/Note)', 'C_OnValue_(CC/PB)', 'C_OffValue_(CC)']] = ['CC', '36', '90', '7']",
+    "b.loc[row, ['D_CommandType', 'D_Number_(PC/CC/Note)', 'D_Velocity_(Note)']] = ['Note', '60', '100']",
+  ].join("\n"))));
+  sim.run(10000);
+  const seen = watch(sim);
+  const usb = () => seen.splice(0).filter((m) => m.startsWith("USB"));
+  for (const ms of [40, 499, 500, 800]) {
+    sim.footswitch(0, true);
+    sim.run(5);
+    assert.deepEqual(usb(), ["USB b0 23 7f"]);
+    sim.run(ms - 5);
+    const afterWait = ["USB b0 24 5a", "USB 90 3c 64"];
+    assert.deepEqual(usb(), ms >= 600 ? afterWait : []);
+    sim.footswitch(0, false);
+    sim.run(700);
+    const expected = ms < 600 ? afterWait : [];
+    if (ms >= 500) expected.push("USB b0 23 00", "USB b0 24 07");
+    expected.push("USB 80 3c 00");  // even a quick tap must release the note
+    assert.deepEqual(usb(), expected, `released after ${ms} ms`);
+  }
+});
+
 test("instant press: the short list goes out as the button goes down, the long and double lists after (before 1.17, it waited)", async () => {
   const sim = simWithDemo(await flashWith(packDemo([
     "b = d['Button_Settings']",

@@ -143,6 +143,8 @@ Marca **Momentary when held** (`Momentary_Hold` `Y`) en un botón con un comando
 
 La usa el botón 4 del banco 11 de la demo, BOST.
 
+**Send Off only after a hold** (`Off_After_Hold`) se aplica de forma independiente a los comandos CC sin toggle de la lista de pulsación corta. Configura los valores On y Off de cada CC. Con On 127 y Off 0, un toque envía 127 una sola vez. Si mantienes el botón durante al menos `Long_Press_ms`, envía 127 al pisar y 0 al soltar. Al alcanzar el umbral no envía nada. Si dejas Off vacío, nunca envía el mensaje al soltar. Las listas de pulsación larga y doble conservan sus tiempos habituales.
+
 *Firmware 0.39 o posterior; un firmware anterior ignora la opción y el botón simplemente alterna.*
 
 <details><summary>Por dentro</summary>

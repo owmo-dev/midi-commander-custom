@@ -143,6 +143,8 @@ Tick **Momentary when held** (`Momentary_Hold` `Y`) on a button with a toggle co
 
 The demo's bank 11 button 4, BOST, uses it.
 
+**Send Off only after a hold** (`Off_After_Hold`) works independently on the short list’s non-toggle CC commands. Set each CC’s On and Off values. With On 127 and Off 0, a tap sends 127 once. A hold sends 127 on press and 0 on release after at least `Long_Press_ms`. Crossing the threshold sends nothing. A blank Off value always omits the release message. Long and double press lists follow their usual timing.
+
 *Firmware 0.39 or later; older firmware ignores the option and the button simply toggles.*
 
 <details><summary>Under the hood</summary>

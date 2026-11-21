@@ -45,6 +45,8 @@ static bool switch_down(GPIO_TypeDef *port, uint16_t pin);
 #define LIST_UP_AFTER		(0x02)	// the release pass follows the press pass
 #define LIST_KEY_WAITED		(0x04)	// resumed at a Key whose delay is already over
 #define LIST_NO_BUTTON		(0x08)	// Button commands are passed over, see run_button_cmd
+#define LIST_SKIP_CC_OFF	(0x20)	// a short tap omits CC Off
+#define LIST_SKIP_PLAIN_CC_ON	(0x40)	// restoring a toggle must not replay a plain CC
 #define LIST_FORCE_PC		(0x10)	// its PCs go out even when Skip_Same_PC would drop them
 /*
  * A list being run. A Macro command runs another button's list in place, so
@@ -66,7 +68,7 @@ static void run_button_cmd(const uint8_t *pRom);
 static void link_push(uint8_t status, uint8_t number, uint8_t value);
 static uint8_t bank_switch_led(uint8_t which, uint8_t pressed);
 static uint8_t *bank_switch_rom(uint8_t list, uint8_t unused, uint8_t cmd);
-static bool pending_defer_release(uint8_t owner);
+static bool pending_defer_release(uint8_t owner, uint8_t flags);
 static void pending_flush_owner(uint8_t owner);
 static bool pending_any(void);
 static void pending_clear(void);
@@ -954,6 +956,12 @@ static const uint8_t *direct_label(uint8_t sw){
 	return text;
 }
 
+// Each ASCII label character carries one button setting in its high bit.
+static bool button_label_flag(uint8_t bank, uint8_t sw, uint8_t character){
+	uint8_t c = pButtonLabels[(bank * MIDI_NUM_SWITCHES + sw) * BUTTON_LABEL_LEN + character];
+	return c != 0xFF && (c & LABEL_OPTION_BIT);
+}
+
 /*
  * Reset on bank change: a button whose label carries LABEL_RESET_BIT goes back
  * to off, its long and double press toggles too, and a cycle button back to
@@ -961,15 +969,10 @@ static const uint8_t *direct_label(uint8_t sw){
  * the bank you go to sets the device up with its own commands. A global button
  * so marked starts again on every bank change.
  */
-static bool button_resets(uint8_t bank, uint8_t sw){
-	uint8_t c = pButtonLabels[(uint16_t)(bank * MIDI_NUM_SWITCHES + sw) * BUTTON_LABEL_LEN];
-	return c != 0xFF && (c & LABEL_RESET_BIT);
-}
-
 static void reset_bank_buttons(uint8_t bank){
 	for(uint8_t i=0; i<MIDI_NUM_SWITCHES; i++){
 		uint8_t b = button_bank(bank, i);
-		if(!button_resets(b, i)) continue;
+		if(!button_label_flag(b, i, 0)) continue;
 		uint32_t keep = ~(1UL << b);
 		a_sw_obj[i].switch_toggle_state &= keep;
 		a_sw_obj[i].long_toggle_state &= keep;
@@ -1886,10 +1889,11 @@ uint8_t sw_count_in(void){
 	return (uint8_t)(left > 99 ? 99 : left);
 }
 
-static bool pending_defer_release(uint8_t owner){
+static bool pending_defer_release(uint8_t owner, uint8_t flags){
 	for(uint8_t i=0; i<PENDING_LISTS; i++){
 		if(pending_lists[i].active && pending_lists[i].owner == owner){
 			pending_lists[i].release_pending = true;
+			pending_lists[i].flags |= flags;
 			return true;
 		}
 	}
@@ -1934,7 +1938,7 @@ static void pending_task(void){
 				run_list_up(run.frames[0].base, run.frames[0].first, run.toggle, run.flags);
 			}
 		} else if(run.release_pending){
-			pending_defer_release(run.owner);	// another Wait: the release waits too
+			pending_defer_release(run.owner, 0);	// another Wait: the release waits too
 		}
 	}
 }
@@ -2848,6 +2852,7 @@ static bool run_list_stack(frame_t *st, uint8_t depth, uint8_t toggle,
 			return false;
 		}
 		if(key_ms) key_waited = false;
+		if((flags & LIST_SKIP_PLAIN_CC_ON) && (*pRom & 0xF0) == CMD_CC_NIBBLE && !midiCmd_get_cmd_toggle(pRom)) continue;
 		if(add_cmd && (*pRom & 0xF0) == CMD_CC_NIBBLE){
 			exp_add(add_cmd, pRom, toggle);	// the pedal sends it, not the press
 			continue;
@@ -2968,6 +2973,7 @@ static void run_list_up(uint8_t *base, uint8_t first, uint8_t toggle, uint8_t fl
 		if(seq_above && cmd_takes_steps(pRom) && !midiCmd_get_cmd_toggle(pRom)){
 			seq_stop(pRom[0] & 0x0F, pRom[1] & 0x7F);	// released: then its Off value
 		}
+		if((flags & LIST_SKIP_CC_OFF) && (*pRom & 0xF0) == CMD_CC_NIBBLE) continue;
 		if((flags & LIST_SKIP_BANK) && (*pRom & 0xF0) == CMD_BANK_NIBBLE) continue;
 		if(ramp_ms && (*pRom & 0xF0) == CMD_CC_NIBBLE){
 			// A momentary CC ramps back to Off; a toggle one moves on the press only
@@ -3109,12 +3115,15 @@ static void release_group(uint8_t i){
  */
 static bool exact_press = false;	// sw_trigger_button's: on or off, never a reload
 
-static bool button_reloads(uint8_t i){
-	if(exact_press || !get_sw_toggle_state(&a_sw_obj[i])) return false;
-	uint8_t c = pButtonLabels[(uint16_t)(sw_bank(i) * MIDI_NUM_SWITCHES + i) * BUTTON_LABEL_LEN + 2];
-	if(c == 0xFF || !(c & LABEL_RELOAD_BIT)) return false;
+static bool single_state_toggle(uint8_t i){
 	if(!sw_button_is_toggle(switch_current_page, i)) return false;
 	return cycle_states(get_rom_pointer(switch_current_page, i, 0)) == 1;
+}
+
+static bool button_reloads(uint8_t i){
+	if(exact_press || !get_sw_toggle_state(&a_sw_obj[i])) return false;
+	if(!button_label_flag(sw_bank(i), i, 2)) return false;
+	return single_state_toggle(i);
 }
 
 static void fire_short_down(uint8_t i){
@@ -3156,8 +3165,7 @@ static void fire_short_down(uint8_t i){
 static bool button_momentary_hold(uint8_t i){
 	uint8_t v = pButtonLedModes[sw_bank(i) * MIDI_NUM_SWITCHES + i];
 	if(v == 0xFF || !(v & BUTTON_MOMENTARY_HOLD)) return false;
-	if(!sw_button_is_toggle(switch_current_page, i)) return false;
-	return cycle_states(get_rom_pointer(switch_current_page, i, 0)) == 1;
+	return single_state_toggle(i);
 }
 
 /*
@@ -3177,8 +3185,7 @@ static uint8_t release_bank(sw_t *sw){
  * LABEL_INSTANT_BIT).
  */
 static bool button_instant(uint8_t i){
-	uint8_t c = pButtonLabels[(uint16_t)(sw_bank(i) * MIDI_NUM_SWITCHES + i) * BUTTON_LABEL_LEN + 1];
-	return c != 0xFF && (c & LABEL_INSTANT_BIT);
+	return button_label_flag(sw_bank(i), i, 1);
 }
 
 // A press that may still become a long or double one begins
@@ -3196,13 +3203,18 @@ static void pending_begin(uint8_t i, uint32_t now){
 	set_momentary_led(i, 1);
 }
 
-static void fire_short_up(uint8_t i){
+static bool button_off_after_hold(uint8_t bank, uint8_t i){
+	return button_label_flag(button_bank(bank, i), i, 3);
+}
+
+static void fire_short_up(uint8_t i, bool held){
 	sw_t *sw = &a_sw_obj[i];
 	uint8_t bank = release_bank(sw);
 	set_momentary_led(i, 0);
-	if(pending_defer_release(i)) return;	// still waiting: released once it finishes
+	uint8_t flags = !held && button_off_after_hold(bank, i) ? LIST_SKIP_CC_OFF : 0;
+	if(pending_defer_release(i, flags)) return;	// still waiting: released once it finishes
 	uint8_t toggleState = (sw->switch_toggle_state >> button_bank(bank, i)) & 1;
-	run_list_up(get_rom_pointer(bank, i, 0), cycle_current_first(bank, i), toggleState, 0);
+	run_list_up(get_rom_pointer(bank, i, 0), cycle_current_first(bank, i), toggleState, flags);
 }
 
 /*
@@ -3223,7 +3235,7 @@ static void settle_pending_presses(void){
 			sw->press_state = PRESS_IDLE;
 			if(sw->instant_fired) continue;
 			fire_short_down(i);
-			fire_short_up(i);
+			fire_short_up(i, false);
 		} else if(sw->press_state == PRESS_PENDING || sw->press_state == PRESS_COMBO_WAIT){
 			if(!(sw->press_state == PRESS_PENDING && sw->instant_fired)) fire_short_down(i);
 			sw->press_state = PRESS_SHORT;
@@ -3248,7 +3260,7 @@ static void fire_long_down(uint8_t i){
 static void fire_long_up(uint8_t i){
 	sw_t *sw = &a_sw_obj[i];
 	set_momentary_led(i, 0);
-	if(pending_defer_release(i)) return;
+	if(pending_defer_release(i, 0)) return;
 	uint8_t bank = release_bank(sw);
 	uint8_t toggleState = (sw->long_toggle_state >> button_bank(bank, i)) & 1;
 	run_list_up(get_long_rom_pointer(bank, i, 0), 0, toggleState, 0);
@@ -3586,7 +3598,7 @@ void sw_trigger_button(uint8_t sw){
 	bool saved = exact_press;
 	exact_press = true;
 	fire_short_down(sw);
-	fire_short_up(sw);
+	fire_short_up(sw, false);
 	exact_press = saved;
 }
 
@@ -4150,7 +4162,7 @@ static void fire_double_up(uint8_t i){
 	sw_t *sw = &a_sw_obj[i];
 	uint8_t bank = release_bank(sw);
 	uint8_t toggleState = (sw->double_toggle_state >> button_bank(bank, i)) & 1;
-	if(pending_defer_release(i)) return;
+	if(pending_defer_release(i, 0)) return;
 	run_list_up(get_double_rom_pointer(bank, i, 0), 0, toggleState, 0);
 }
 
@@ -4240,7 +4252,7 @@ static void fire_combo_up(void){
 	uint8_t n = combo_held;
 	combo_held = 0xFF;
 	if(n == 0xFF || combo_held_list == NULL) return;
-	if(pending_defer_release(PENDING_OWNER_COMBO)) return;
+	if(pending_defer_release(PENDING_OWNER_COMBO, 0)) return;
 	run_list_up(combo_held_list, 0, (combo_toggle >> n) & 1U, 0);
 }
 
@@ -4526,7 +4538,7 @@ void handle_switches(void){
 			sw->press_state = PRESS_IDLE;
 			if(!sw->instant_fired){
 				fire_short_down(i);
-				fire_short_up(i);
+				fire_short_up(i, false);
 			}
 		}
 
@@ -4571,7 +4583,7 @@ void handle_switches(void){
 					sw->instant_fired = false;
 					// fall through
 				case PRESS_PENDING:
-					if(sw->instant_fired) fire_short_up(i);	// went down at once
+					if(sw->instant_fired) fire_short_up(i, false);	// went down at once
 					if(has_double){
 						// Maybe the first half of a double press: wait for a second one
 						set_momentary_led(i, 0);
@@ -4580,20 +4592,25 @@ void handle_switches(void){
 					} else if(!sw->instant_fired){
 						// Released before the threshold: it was a short press
 						fire_short_down(i);
-						fire_short_up(i);
+						fire_short_up(i, false);
 					}
 					break;
-				case PRESS_SHORT:
-					fire_short_up(i);
+				case PRESS_SHORT: {
+					bool held = (now - sw->press_tick) >= long_press_threshold_ms();
+					fire_short_up(i, held);
 					// Not after a bank change: the button now there is another one
 					if(sw->press_bank == switch_current_page && button_momentary_hold(i) && !sw->reloaded
-							&& (now - sw->press_tick) >= long_press_threshold_ms()){
+							&& held){
+						uint8_t saved_flags = trigger_flags;
+						if(button_off_after_hold(sw->press_bank, i)) trigger_flags |= LIST_SKIP_PLAIN_CC_ON;
 						sw_trigger_button(i);	// held: back to the state before the press
+						trigger_flags = saved_flags;
 					}
 					break;
+				}
 				case PRESS_LONG:
 					fire_long_up(i);
-					if(sw->instant_fired) fire_short_up(i);
+					if(sw->instant_fired) fire_short_up(i, true);
 					break;
 				case PRESS_DOUBLE:
 					set_momentary_led(i, 0);
