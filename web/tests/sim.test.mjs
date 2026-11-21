@@ -302,6 +302,50 @@ test("Bank Up moves on from the index bank", async () => {
   assert.ok(names.some((c) => Number(c[0]) === s.bank && c[1] === s.bankName), `bank ${s.bank} is ${s.bankName} in the demo`);
 });
 
+test("zero bank jump keeps the current page and runs only the bank switch long list", async () => {
+  for (const [mode, preview] of [["Bank", 0], ["Bank+MIDI", 0], ["Bank+MIDI", 5]]) {
+    const sim = simWithDemo(await flashWith(packDemo([
+      "g = d['Global_Settings']",
+      "g.loc[g.Label == 'Bank_Jump_Step', 'Value'] = '0'",
+      `g.loc[g.Label == 'Bank_Switch_Mode', 'Value'] = '${mode}'`,
+      `g.loc[g.Label == 'Bank_Preview', 'Value'] = '${preview}'`,
+    ].join("\n"))));
+    sim.usbIn([0xb0, 32, 12]);              // first song, D opens its second page
+    sim.run(100);
+    tap(sim, 7);
+    const pedal = await Pedal.open(sim.access);
+    assert.equal((await pedal.getState()).bank, 31);
+    const seen = watch(sim);
+    const midi = () => seen.splice(0).filter((m) => /^USB [bc]/.test(m));
+    for (const [id, commands] of [[8, ["USB b0 53 7f"]], [9, ["USB b0 54 7f", "USB c0 00"]]]) {
+      sim.footswitch(id, true);
+      sim.run(450);
+      assert.deepEqual(midi(), []);
+      sim.run(100);
+      assert.deepEqual(midi(), mode === "Bank" ? [] : commands);
+      sim.run(1000);
+      sim.footswitch(id, false);
+      sim.run(100);
+      assert.deepEqual(midi(), [], "no repeated list, short press or page leave");
+      const state = await pedal.getState();
+      assert.equal(state.bank, 31);
+      assert.equal(state.preview, null);
+    }
+    tap(sim, 9);
+    const state = await pedal.getState();
+    assert.equal(preview ? state.preview : state.bank, 15, "tap advances one setlist entry");
+    if (preview) {
+      midi();
+      sim.footswitch(8, true);
+      sim.run(600);
+      sim.footswitch(8, false);
+      sim.run(50);
+      assert.deepEqual(midi(), ["USB b0 53 00"], "the long list runs while previewing");
+      assert.equal((await pedal.getState()).preview, 15, "the same preview stays open");
+    }
+  }
+});
+
 test("a tap waiting for its double press goes out in its own bank when the bank changes", async () => {
   const flash = await flashWith(packDemo([
     "p = d['DoublePress_Settings']",        // STOP on LOOP gets a double press
@@ -819,6 +863,21 @@ function holdBoth(sim) {
   sim.footswitch(9, false);
   sim.run(600);
 }
+
+test("the on-pedal editor saves and reloads a disabled bank jump", () => {
+  const sim = simWithDemo();
+  sim.run(10000);
+  holdBoth(sim);
+  tap(sim, 7);                              // D opens settings
+  for (let i = 0; i < 5; i++) tap(sim, 1);  // next field to BANKJUMP
+  for (let i = 0; i < 8; i++) tap(sim, 2);  // decrement from the demo's 8 to 0
+  tap(sim, 1);                              // moving the cursor saves the value
+  assert.equal(sim.flashNow()[0x20000 + 11], 32);
+  tap(sim, 0);                              // read it again and increase by one
+  tap(sim, 3);
+  tap(sim, 1);
+  assert.equal(sim.flashNow()[0x20000 + 11], 1);
+});
 
 test("the editor's setlist screen moves, takes out and puts in songs (before 1.23, it had none)", async () => {
   const sim = simWithDemo();

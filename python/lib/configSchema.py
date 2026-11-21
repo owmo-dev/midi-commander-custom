@@ -104,7 +104,7 @@ GLOBAL_GROUPS = [
     ]),
     ("Banks", [
         ("Bank_Switch_Mode", "Bank switches", "what Bank Up / Down do, see the Bank Switch tab"),
-        ("Bank_Jump_Step", "Long press jumps", "banks, 1-31"),
+        ("Bank_Jump_Step", "Long press jumps", "0–31 banks. Set to 0 to disable the jump."),
         ("Bank_Preview", "Preview banks", "seconds a bank shown by Bank Up / Down waits for a button to confirm it, 0 = off"),
         ("Setlist_Mode", "Follow the setlist", "Bank Up / Down use the order in the Setlist tab"),
         ("Setlist_Display", "… and show the place", "the info line shows the song's place and the next one, 3/12>INTR"),
@@ -169,7 +169,7 @@ GLOBAL_FIELDS = {
     "LED_Brightness": _int(1, 100),
     "LED_Rest_Brightness": _int(1, 100),
     "Bank_Preview": _int(0, 60),
-    "Bank_Jump_Step": _int(1, 31),
+    "Bank_Jump_Step": _int(0, 31),
     "Bank_Change_Mode": _choice(["Off", "PC", "CC", "Song PC", "Song CC"]),
     "Bank_Switch_Mode": _choice(BANK_SWITCH_MODES),
     "Sleep_After_Min": _int(0, 60),

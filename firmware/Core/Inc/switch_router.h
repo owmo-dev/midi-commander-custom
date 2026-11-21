@@ -23,6 +23,7 @@ void set_all_leds(uint8_t state);
 uint8_t sw_get_current_page(void);
 // The bank the song is in: the one shown, or the one whose page is shown
 uint8_t sw_get_home_bank(void);
+uint8_t sw_bank_jump_step(void);
 uint8_t sw_preview_bank(void);	// the bank previewed, 0xFF when none
 // sw_preview_bank while a bank is chosen with two presses (Bank Direct): alone
 // while the group is chosen, then | 1 + the group of eight banks picked

@@ -366,6 +366,7 @@
 #define GLOBAL_SETTINGS_LED_BRIGHTNESS (9)		// Lit LED brightness in percent (0xFF = 100)
 #define GLOBAL_SETTINGS_LED_REST_BRIGHTNESS (10)	// Brightness of LEDs lit at rest by Reverse/AlwaysOn (0xFF = 100)
 #define GLOBAL_SETTINGS_BANK_JUMP_STEP (11)	// Banks skipped by a long press on Bank Up/Down (0/0xFF = 8)
+#define BANK_JUMP_DISABLED (32)	// explicit zero in the configurator
 #define GLOBAL_SETTINGS_BANK_CHANGE_MODE (12)	// BANK_CHANGE_: off, a bank by Program Change or Control Change, or a setlist song
 #define GLOBAL_SETTINGS_BANK_CHANGE_CHANNEL (13)	// 0 = any channel, 1-16 = that channel only
 #define GLOBAL_SETTINGS_BANK_CHANGE_CC (14)	// CC number when the mode is Control Change

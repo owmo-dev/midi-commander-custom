@@ -21,7 +21,7 @@ Una columna opcional `Notes` guarda una nota del banco, que se ve en la [vista S
 
 ## Bank Up y Bank Down
 
-Los dos pulsadores de la derecha recorren los bancos. Una pulsación corta en **Bank Up** o **Bank Down** avanza o retrocede un banco, y actúa al soltar. Si lo mantienes más de `Long_Press_ms` (500 ms si no lo cambias), salta varios bancos de golpe en cuanto se cumple ese tiempo; cuántos lo decide **Long press jumps** en la pestaña **Global** del configurador, `Bank_Jump_Step` en el CSV, de 1 a 31, 8 si no lo cambias. Los dos dan la vuelta, del 31 al 0 y del 0 al 31.
+Los dos pulsadores de la derecha recorren los bancos. Una pulsación corta en **Bank Up** o **Bank Down** avanza o retrocede un banco, y actúa al soltar. Si lo mantienes más de `Long_Press_ms` (500 ms si no lo cambias), salta varios bancos de golpe en cuanto se cumple ese tiempo; cuántos lo decide **Long press jumps** en la pestaña **Global** del configurador, `Bank_Jump_Step` en el CSV, de 0 a 31, con 8 por defecto. Elige 0 para seguir en el mismo banco o página al mantener el pulsador. En `Bank+MIDI` se ejecuta su lista Long una vez al alcanzar el umbral, incluso con la vista previa activada. Los dos dan la vuelta, del 31 al 0 y del 0 al 31.
 
 Lo que hacen se cambia con **Bank switches** en la pestaña **Global**, `Bank_Switch_Mode`:
 
@@ -130,7 +130,7 @@ En mitad de una canción, un pie que roza Bank Up cambia el patch, y con él la 
 Actívala con **Preview banks** en la pestaña **Global**, `Bank_Preview` en el CSV: los segundos que una vista previa te espera, de 1 a 60. 0 la desactiva, y es lo predeterminado. En el editor de la pedalera es `PREVIEW`.
 
 - Una pulsación, corta o larga, en Bank Up / Down mueve el banco que se enseña igual que habría movido el propio banco, setlist incluido. La pantalla muestra el nombre de ese banco invertido, en blanco con letras negras, sobre las etiquetas de sus botones.
-- Mientras miras no se envía nada: ni los comandos de los bancos ni los propios de los pulsadores de banco.
+- Recorrer la vista previa no envía MIDI. Con **Long press jumps** en 0, mantener el pulsador conserva la vista previa y ejecuta su lista Long en `Bank+MIDI`.
 - El primero de los ocho botones que baja lo confirma. La pedalera va allí como lo habrían hecho Bank Up / Down, con los comandos de salida y de entrada, y esa pulsación no hace nada más, ni tampoco al soltarla. Un botón que ya estaba pisado cuando empezó la vista previa termina su pulsación con normalidad.
 - Al confirmar tampoco se envían los comandos propios de los pulsadores de banco (`Bank+MIDI`).
 - Volver al banco en el que estás quita la vista previa, y también dejarla sin tocar durante los segundos puestos: la pantalla vuelve al banco en el que estás y no ha cambiado nada.

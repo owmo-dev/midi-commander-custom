@@ -784,9 +784,10 @@ const uint8_t *sw_button_label(uint8_t bank, uint8_t sw){
 	return pCycleLabels + index * BUTTON_LABEL_LEN;
 }
 
-static uint8_t bank_jump_step(void){
+uint8_t sw_bank_jump_step(void){
 	uint8_t v = pGlobalSettings[GLOBAL_SETTINGS_BANK_JUMP_STEP];
-	if(v == 0 || v == 0xFF || v >= MIDI_NUM_BANKS) return 8;
+	if(v == BANK_JUMP_DISABLED) return 0;
+	if(v == 0 || v >= MIDI_NUM_BANKS) return 8;
 	return v;
 }
 
@@ -3379,7 +3380,8 @@ static void bank_switch_hold_up(uint8_t which, bool held){
 
 // A bank switch pressed: step delta banks, or only preview the bank there
 static void bank_switch_press(uint8_t which, int16_t delta, bool long_press){
-	if(bank_switch_mode() == BANK_SWITCH_MIDI_ONLY){
+	// A disabled jump still runs the long list, even on a page or in bank preview.
+	if(delta == 0 || bank_switch_mode() == BANK_SWITCH_MIDI_ONLY){
 		fire_bank_switch_cmds(which, long_press);
 		return;
 	}
@@ -3442,7 +3444,7 @@ static void handle_bank_switch(bank_press_t *bp, GPIO_TypeDef *port, uint16_t pi
 	// Held past the threshold: jump by the configured step, once per press
 	if(bp->state == PRESS_PENDING && (now - bp->press_tick) >= long_press_threshold_ms()){
 		bp->state = PRESS_LONG;
-		bank_switch_press(which, direction * (int16_t)bank_jump_step(), true);
+		bank_switch_press(which, direction * (int16_t)sw_bank_jump_step(), true);
 	}
 
 	// Keep blinking LED modes alive while the switch is held

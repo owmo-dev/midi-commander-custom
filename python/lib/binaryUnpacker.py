@@ -16,7 +16,7 @@ from lib.configPacker import (
     PRESET_NAME_COLUMNS, EXP_OUT_SYSEX, EXP_OUT_ZONES, EXP_ZONES_MAX, sysex_text, setlist_frame,
 )
 from lib.flashLayout import (
-    NUM_BANKS, BUTTON_IDS, default_int, EXP_BUTTON_IDS, BOX_SWITCH_IDS, LABEL_LEN, GLOBAL_SIZE, CMD_SIZE,
+    NUM_BANKS, BANK_JUMP_DISABLED, BUTTON_IDS, default_int, EXP_BUTTON_IDS, BOX_SWITCH_IDS, LABEL_LEN, GLOBAL_SIZE, CMD_SIZE,
     BUTTON_STRIDE, COMMANDS_OFFSET, LED_MODES_OFFSET, LABELS_OFFSET, LONG_PRESS_OFFSET, EXP_OFFSET,
     EXP_STRIDE, BANK_ENTER_OFFSET, SYSEX_OFFSET, SYSEX_STRING_COUNT, SYSEX_STRING_MAX,
     SYSEX_STRING_STRIDE, BANK_SWITCH_OFFSET, BANK_SWITCH_LISTS, SETLIST_OFFSET, SETLIST_MAX,
@@ -202,6 +202,11 @@ def unpack_global_settings(data: bytes) -> pd.DataFrame:
     g = data[:GLOBAL_SIZE]
     exp1 = g[2] if 0 < g[2] <= 127 else default_int("Exp1_CC")
     exp2 = g[3] if 0 < g[3] <= 127 else default_int("Exp2_CC")
+    jump_step = g[11]
+    if jump_step == BANK_JUMP_DISABLED:
+        jump_step = 0
+    elif not 1 <= jump_step < NUM_BANKS:
+        jump_step = default_int("Bank_Jump_Step")
     rows = [
         ("MIDI_Channel", str((g[0] & 0x0F) + 1)),
         ("RealTime_Passthrough", "Y" if g[1] == 1 else "N"),
@@ -217,7 +222,7 @@ def unpack_global_settings(data: bytes) -> pd.DataFrame:
         ("Long_Press_ms", str(g[8] * 10 if 0 < g[8] < 0xFF else default_int("Long_Press_ms"))),
         ("LED_Brightness", str(g[9] if 0 < g[9] <= 100 else default_int("LED_Brightness"))),
         ("LED_Rest_Brightness", str(g[10] if 0 < g[10] <= 100 else default_int("LED_Rest_Brightness"))),
-        ("Bank_Jump_Step", str(g[11] if 0 < g[11] < NUM_BANKS else default_int("Bank_Jump_Step"))),
+        ("Bank_Jump_Step", str(jump_step)),
         ("Bank_Change_Mode", {1: "PC", 2: "CC", 3: "Song PC", 4: "Song CC"}.get(g[12], "Off")),
         ("Bank_Change_Channel", str(g[13]) if 1 <= g[13] <= 16 else "Any"),
         ("Bank_Change_CC", str(g[14] if g[14] <= 127 else 0)),

@@ -7,6 +7,7 @@ the two agree. The packer, the unpacker and the tools take it from here.
 from lib.cmdBinaryPacker import CYCLE_LABEL_COUNT, CYCLE_LABEL_LEN, MIDI_NUM_COMMANDS_PER_SWITCH, SETLIST_COUNT
 
 NUM_BANKS = 32
+BANK_JUMP_DISABLED = 32  # global byte 11: stored zero still means the default jump of 8
 BUTTON_IDS = ["1", "2", "3", "4", "A", "B", "C", "D"]
 NUM_BUTTONS = len(BUTTON_IDS)
 # The switches an expression pedal can press, and those a box on the jack

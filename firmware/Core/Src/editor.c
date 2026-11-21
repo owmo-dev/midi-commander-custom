@@ -409,7 +409,7 @@ static const setting_t settings[] = {
 	{"COMBO",    GLOBAL_SETTINGS_COMBO,               S_MS,     2,    25, 8,   true,  NULL},
 	{"BRIGHT",   GLOBAL_SETTINGS_LED_BRIGHTNESS,      S_PCT,    1,   100, 100, true,  NULL},
 	{"RESTBRIG", GLOBAL_SETTINGS_LED_REST_BRIGHTNESS, S_PCT,    1,   100, 100, true,  NULL},
-	{"BANKJUMP", GLOBAL_SETTINGS_BANK_JUMP_STEP,      S_NUM,    1,    31, 8,   true,  NULL},
+	{"BANKJUMP", GLOBAL_SETTINGS_BANK_JUMP_STEP,      S_NUM,    0,    31, 8,   true,  NULL},
 	{"SLEEP",    GLOBAL_SETTINGS_SLEEP_AFTER_MIN,     S_MIN,    0,    60, 0,   false, NULL},
 	{"GLOBCHAN", GLOBAL_SETTINGS_GLOBAL_CHANNEL,      S_CHAN,   0,    16, 0,   false, NULL},
 	{"GLOBBANK", GLOBAL_SETTINGS_GLOBAL_BANK,         S_NUM,    0,    32, 0,   false, NULL},
@@ -435,6 +435,7 @@ static const setting_t settings[] = {
 
 // What a stored byte really means, an unset one standing for its default
 static uint8_t setting_value(const setting_t *s){
+	if(s->byte == GLOBAL_SETTINGS_BANK_JUMP_STEP) return sw_bank_jump_step();
 	uint8_t v = pGlobalSettings[s->byte];
 	if(s->kind == S_FLAG) return (v == 0xFF) ? 0 : (uint8_t)((v & s->lo) / (s->lo & -s->lo));
 	if(v == 0xFF) return s->def;
@@ -500,6 +501,7 @@ static void save(void){
 	if(ed.set_dirty){
 		const setting_t *s = &settings[ed.setting];
 		uint8_t v = ed.set_value;
+		if(s->byte == GLOBAL_SETTINGS_BANK_JUMP_STEP && v == 0) v = BANK_JUMP_DISABLED;
 		if(s->kind == S_FLAG){
 			uint8_t was = pGlobalSettings[s->byte];
 			if(was == 0xFF) was = 0;

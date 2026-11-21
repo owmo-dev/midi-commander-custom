@@ -21,7 +21,7 @@ An optional `Notes` column holds a note for the bank, shown in the web configura
 
 ## Bank Up and Bank Down
 
-The two switches on the right step through the banks. A short press on **Bank Up** or **Bank Down** moves one bank, and acts when you let go. Held past `Long_Press_ms` (500 ms unless set), it jumps several banks at once, as soon as that time is reached; how many is **Long press jumps** in the configurator's **Global** tab, `Bank_Jump_Step` in the CSV, 1 to 31, 8 unless set. Both wrap around, from 31 to 0 and from 0 to 31.
+The two switches on the right step through the banks. A short press on **Bank Up** or **Bank Down** moves one bank, and acts when you let go. Held past `Long_Press_ms` (500 ms unless set), it jumps several banks at once, as soon as that time is reached; how many is **Long press jumps** in the configurator's **Global** tab, `Bank_Jump_Step` in the CSV, 0 to 31, with a default of 8. Set it to 0 to stay on the current bank or page when held. In `Bank+MIDI` the switch still runs its Long list once at the threshold, including when bank preview is enabled. Both wrap around, from 31 to 0 and from 0 to 31.
 
 What they do can be changed with **Bank switches** in the **Global** tab, `Bank_Switch_Mode`:
 
@@ -130,7 +130,7 @@ In the middle of a song, a foot that brushes Bank Up changes the patch, and the 
 Turn it on with **Preview banks** in the **Global** tab, `Bank_Preview` in the CSV: the number of seconds a preview waits for you, 1 to 60. 0 is off, the default. On the pedal's own editor it is `PREVIEW`.
 
 - A press, or a long press, on Bank Up / Down moves the bank shown as it would have moved the bank itself, setlist included. The display shows that bank's name inverted, white with black letters, over its button labels.
-- Nothing is sent while you look: neither the banks' commands nor the bank switches' own.
+- Navigating the preview sends no MIDI. With **Long press jumps** at 0, a hold keeps the preview in place and runs the switch's Long list in `Bank+MIDI`.
 - The first of the eight buttons to go down confirms it. The pedal goes there as Bank Up / Down would have, the leave and enter commands included, and that press does nothing else, nor does its release. A button that was already down when the preview began finishes its own press as usual.
 - The bank switches' own commands (`Bank+MIDI`) are not sent when you confirm either.
 - Stepping back to the bank you are in drops the preview, and so does leaving it alone for the seconds set: the display goes back to the bank you are in, and nothing has changed.

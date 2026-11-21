@@ -350,6 +350,15 @@ class RoundTripTest(unittest.TestCase):
         self.assertEqual(packed[11], 4)
         df = unpacker.unpack_config(packed)[0].set_index("Label")["Value"]
         self.assertEqual(df["Bank_Jump_Step"], "4")
+        g.loc[g["Label"] == "Bank_Jump_Step", "Value"] = "0"
+        disabled = pack_config({**sections, "Global_Settings": g})
+        self.assertEqual(disabled[11], 32)
+        self.assertEqual(disabled[:11] + disabled[12:], packed[:11] + packed[12:])
+        for stored, expected in [(32, "0"), (0, "8"), (255, "8"), (31, "31")]:
+            data = bytearray(disabled)
+            data[11] = stored
+            values = unpacker.unpack_global_settings(data).set_index("Label")["Value"]
+            self.assertEqual(values["Bank_Jump_Step"], expected)
 
     def test_fits_in_the_flash_pages(self):
         from lib.flashLayout import FLASH_PAGE_SIZE, SLOT_PAGES

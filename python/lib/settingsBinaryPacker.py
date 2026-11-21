@@ -1,6 +1,6 @@
 from lib.cmdBinaryPacker import cell_text, ranged_int
 from lib.displayText import display_bytes
-from lib.flashLayout import default_int
+from lib.flashLayout import BANK_JUMP_DISABLED, default_int
 
 GLOBAL_SETTINGS_CHANNEL = 0
 GLOBAL_SETTINGS_REALTIME_PASS = 1
@@ -153,7 +153,7 @@ def pack_global_settings(df):
             step = int(float(str(df.loc["Bank_Jump_Step", "Value"])))
         except ValueError:
             step = default_int("Bank_Jump_Step")
-    bin_list[GLOBAL_SETTINGS_BANK_JUMP_STEP] = max(1, min(31, step))
+    bin_list[GLOBAL_SETTINGS_BANK_JUMP_STEP] = BANK_JUMP_DISABLED if step == 0 else max(1, min(31, step))
 
     # Let an incoming Program Change or Control Change select a bank, or with
     # Song PC / Song CC the song at that place in the setlist (firmware 1.38)
