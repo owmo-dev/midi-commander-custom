@@ -786,9 +786,8 @@ const uint8_t *sw_button_label(uint8_t bank, uint8_t sw){
 
 uint8_t sw_bank_jump_step(void){
 	uint8_t v = pGlobalSettings[GLOBAL_SETTINGS_BANK_JUMP_STEP];
-	if(v == BANK_JUMP_DISABLED) return 0;
-	if(v == 0 || v >= MIDI_NUM_BANKS) return 8;
-	return v;
+	if(v > 0 && v < MIDI_NUM_BANKS) return v;
+	return v == BANK_JUMP_DISABLED ? 0 : 8;
 }
 
 // A bank change requested by a command is applied only once the whole command
@@ -3224,6 +3223,11 @@ static void fire_short_up(uint8_t i, bool held){
 	run_list_up(get_rom_pointer(bank, i, 0), cycle_current_first(bank, i), toggleState, flags);
 }
 
+static void fire_short_tap(uint8_t i){
+	fire_short_down(i);
+	fire_short_up(i, false);
+}
+
 /*
  * A press still telling a short from a long or double press belongs to the
  * bank it was made in. Before the bank or page changes it is settled there as
@@ -3241,8 +3245,7 @@ static void settle_pending_presses(void){
 		if(sw->press_state == PRESS_WAIT_SECOND){
 			sw->press_state = PRESS_IDLE;
 			if(sw->instant_fired) continue;
-			fire_short_down(i);
-			fire_short_up(i, false);
+			fire_short_tap(i);
 		} else if(sw->press_state == PRESS_PENDING || sw->press_state == PRESS_COMBO_WAIT){
 			if(!(sw->press_state == PRESS_PENDING && sw->instant_fired)) fire_short_down(i);
 			sw->press_state = PRESS_SHORT;
@@ -3605,8 +3608,7 @@ void sw_trigger_button(uint8_t sw){
 	// A quick tap: the down list, then the up list, exactly like a foot press
 	bool saved = exact_press;
 	exact_press = true;
-	fire_short_down(sw);
-	fire_short_up(sw, false);
+	fire_short_tap(sw);
 	exact_press = saved;
 }
 
@@ -4545,8 +4547,7 @@ void handle_switches(void){
 		if(sw->press_state == PRESS_WAIT_SECOND && (now - sw->release_tick) >= double_press_window_ms()){
 			sw->press_state = PRESS_IDLE;
 			if(!sw->instant_fired){
-				fire_short_down(i);
-				fire_short_up(i, false);
+				fire_short_tap(i);
 			}
 		}
 
@@ -4599,8 +4600,7 @@ void handle_switches(void){
 						next = PRESS_WAIT_SECOND;
 					} else if(!sw->instant_fired){
 						// Released before the threshold: it was a short press
-						fire_short_down(i);
-						fire_short_up(i, false);
+						fire_short_tap(i);
 					}
 					break;
 				case PRESS_SHORT: {
