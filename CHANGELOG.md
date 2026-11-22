@@ -2,11 +2,11 @@
 
 Firmware versions are shown on the display at boot and reported by the tools.
 
-## Unreleased
+## 1.45.2 (OWMO fork)
 
-- **Page and Page+MIDI bank switches.** Bank Up and Down step directly between pages in bank or setlist order, keeping expression assignments active. Page+MIDI also runs the switch’s short or long command list. [Bank switches](docs/manual/en/04-banks.md#what-the-bank-switches-send)
-
-- The bank name now always shifts two pixels right on the bank screen and in bank preview. Both configurators accept older CSVs and save only supported global settings.
+- **Page and Page+MIDI bank switches.** Bank Up and Down step directly between pages in bank or setlist order. Expression assignments stay active as you move between pages. Page+MIDI also runs the switch’s short or long command list. To alternate between two pages, put both banks in the active setlist, enable **Follow the setlist**, and select **Page+MIDI** in **Global → Bank switches**. [Bank switches](docs/manual/en/04-banks.md#what-the-bank-switches-send)
+- **Battery indicator.** A solid icon shows battery power. It becomes an outline when the power-sense reading stays below 2.28 V for two consecutive samples, one second apart. The icon clears on USB power. [Display](docs/manual/en/09-the-display.md)
+- **Bank name alignment and CSV compatibility.** Bank names now sit two pixels farther right on the bank screen and in preview. Both configurators accept 1.45.1 CSV files and omit the retired alignment setting when saving.
 
 ## 1.45.1 (OWMO fork)
 

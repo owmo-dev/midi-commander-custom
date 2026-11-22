@@ -4,7 +4,7 @@ Custom firmware and configuration tools for the **MeloAudio Midi Commander** foo
 
 **[Read the user manual](docs/manual/en/README.md)** · **[Manual de usuario en español](docs/manual/es/README.md)**
 
-The OWMO fork builds on [Charles5150/midi-commander-custom](https://github.com/Charles5150/midi-commander-custom). Its four additions are documented in the [fork release notes](CHANGELOG.md#1451-owmo-fork). The upstream project is a fork of [arasan95/midi-commander-custom](https://github.com/arasan95/midi-commander-custom), which in turn builds on the original project by [harvie256](https://github.com/harvie256/midi-commander-custom). None of this would exist without their work and that of the other contributors listed in the [Acknowledgements](#acknowledgements). Thank you all.
+The OWMO fork builds on [Charles5150/midi-commander-custom](https://github.com/Charles5150/midi-commander-custom). See the [fork release notes](CHANGELOG.md#1452-owmo-fork) for the changes in 1.45.2. The upstream project is a fork of [arasan95/midi-commander-custom](https://github.com/arasan95/midi-commander-custom), which in turn builds on the original project by [harvie256](https://github.com/harvie256/midi-commander-custom). None of this would exist without their work and that of the other contributors listed in the [Acknowledgements](#acknowledgements). Thank you all.
 
 The firmware replaces the stock MeloAudio one but never touches its bootloader, so you can always flash the vendor image back. Its configuration lives in the microcontroller's own flash, so the stock configuration stored in the external EEPROM is left untouched.
 
@@ -33,7 +33,7 @@ The [full list](docs/manual/en/01-what-it-does.md) has every feature; in brief:
 
 **With the desktop tools:**
 
-1. **Flash the firmware.** Use the fork’s `.dfu` from [OWMO releases](https://github.com/owmo-dev/midi-commander-custom/releases) or [build it locally](CONTRIBUTING.md#building-the-firmware). Switch the pedal on holding **Bank Down** and **D**, then flash it with `dfu-util -d 0483:df11 --alt 0 --download midi-commander-custom-owmo-1.45.1.dfu` and switch it off and on. From then on, updates need nothing held.
+1. **Flash the firmware.** Use the fork’s `.dfu` from [OWMO releases](https://github.com/owmo-dev/midi-commander-custom/releases) or [build it locally](CONTRIBUTING.md#building-the-firmware). Switch the pedal on holding **Bank Down** and **D**, then flash it with `dfu-util -d 0483:df11 --alt 0 --download midi-commander-custom-owmo-1.45.2.dfu` and switch it off and on. From then on, updates need nothing held.
 2. **Install the tools.** Download [the repository as a ZIP](https://github.com/owmo-dev/midi-commander-custom/archive/refs/heads/main.zip) and unzip it, and install [Python 3.12](https://www.python.org/downloads/).
 3. **Configure it.** Double click **Start Configurator.command** on macOS or **Start Configurator.bat** on Windows, or run `./start-configurator.sh` on Linux: the first time it sets up the tools, then opens the configurator. Click **Read from Device**, edit and **Flash to Device**. The configurator opens on a demo configuration that uses every feature, worth a look first.
 
