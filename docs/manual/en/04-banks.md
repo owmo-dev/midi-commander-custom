@@ -21,7 +21,7 @@ An optional `Notes` column holds a note for the bank, shown in the web configura
 
 ## Bank Up and Bank Down
 
-The two switches on the right step through the banks. A short press on **Bank Up** or **Bank Down** moves one bank, and acts when you let go. Held past `Long_Press_ms` (500 ms unless set), it jumps several banks at once, as soon as that time is reached; how many is **Long press jumps** in the configurator's **Global** tab, `Bank_Jump_Step` in the CSV, 0 to 31, with a default of 8. Set it to 0 to stay on the current bank or page when held. In `Bank+MIDI` the switch still runs its Long list once at the threshold, including when bank preview is enabled. Both wrap around, from 31 to 0 and from 0 to 31.
+The two switches on the right step through the banks. A short press on **Bank Up** or **Bank Down** moves one bank, and acts when you let go. Held past `Long_Press_ms` (500 ms unless set), it jumps several banks at once, as soon as that time is reached; how many is **Long press jumps** in the configurator's **Global** tab, `Bank_Jump_Step` in the CSV, 0 to 31, with a default of 8. Set it to 0 to stay on the current bank or page when held. In `Bank+MIDI` and `Page+MIDI` the switch still runs its Long list once at the threshold, including when bank preview is enabled. Both wrap around, from 31 to 0 and from 0 to 31.
 
 What they do can be changed with **Bank switches** in the **Global** tab, `Bank_Switch_Mode`:
 
@@ -30,6 +30,8 @@ What they do can be changed with **Bank switches** in the **Global** tab, `Bank_
 | `Bank` | Change bank, and nothing else. The default. |
 | `Bank+MIDI` | Change bank, and also send their own commands (see [What the bank switches send](#what-the-bank-switches-send)). |
 | `MIDI only` | Send their own commands and never change bank, which turns the pedal into a plain ten switch controller. |
+| `Page` | Step through bank numbers or the active setlist as pages. Expression assignments stay active. |
+| `Page+MIDI` | Step through the same pages and also run the switch’s short or long command list. |
 
 Held together for two seconds, Bank Down and Bank Up open the [editor on the pedal](10-editing-on-the-pedal.md) instead, unless **Lock on-pedal editing** (`Edit_Lock`) in the **Global** tab turns that off; see [Locking the editor](10-editing-on-the-pedal.md#locking-the-editor).
 
@@ -130,13 +132,13 @@ In the middle of a song, a foot that brushes Bank Up changes the patch, and the 
 Turn it on with **Preview banks** in the **Global** tab, `Bank_Preview` in the CSV: the number of seconds a preview waits for you, 1 to 60. 0 is off, the default. On the pedal's own editor it is `PREVIEW`.
 
 - A press, or a long press, on Bank Up / Down moves the bank shown as it would have moved the bank itself, setlist included. The display shows that bank's name inverted, white with black letters, over its button labels.
-- Navigating the preview sends no MIDI. With **Long press jumps** at 0, a hold keeps the preview in place and runs the switch's Long list in `Bank+MIDI`.
+- Navigating the preview sends no MIDI. With **Long press jumps** at 0, a hold keeps the preview in place and runs the switch's Long list in `Bank+MIDI` and `Page+MIDI`.
 - The first of the eight buttons to go down confirms it. The pedal goes there as Bank Up / Down would have, the leave and enter commands included, and that press does nothing else, nor does its release. A button that was already down when the preview began finishes its own press as usual.
-- The bank switches' own commands (`Bank+MIDI`) are not sent when you confirm either.
+- The bank switches' own commands (`Bank+MIDI` / `Page+MIDI`) are not sent when you confirm either.
 - Stepping back to the bank you are in drops the preview, and so does leaving it alone for the seconds set: the display goes back to the bank you are in, and nothing has changed.
 - A bank change from MIDI, a configuration switch or the editor opening drop it too.
 - Tempo readouts and texts from the computer wait until the preview is over.
-- With **Bank switches** at `MIDI only` the bank switches do not change bank, so there is nothing to preview.
+- In **Page** and **Page+MIDI**, confirming a preview opens the selected page. **MIDI only** skips preview.
 
 *Firmware 0.66 or later.*
 
@@ -213,7 +215,7 @@ The page is a bank like any other and could be used on its own, but reached this
 
 - Nothing of the bank is sent again on coming back: its enter commands went out when you entered it.
 - The page's enter commands go out when it is shown, and its leave commands when you go back, so a page can switch something on the device and off again. Leave them empty for a page that only changes the switches.
-- Bank Up / Down, relative `Bank` commands and the setlist move on from the bank, not the page, and leave the page on the way.
+- In **Page** and **Page+MIDI**, Bank Up / Down step from the displayed page and wrap in either direction. In **Bank** and **Bank+MIDI**, the switches step from the home bank. Relative `Bank` commands also step from the home bank.
 - The expression pedals keep the bank's `BankExpression_Settings` and whatever `Exp` commands set. Their toe and heel buttons press the button of the page shown; auto-engage waits until you are back on the bank.
 - Text the computer wrote until the bank changes stays on the display.
 - After a power cycle with `Remember_State`, the pedal comes back on the bank, not on its page. Each page keeps its own toggle states, like any bank.
@@ -258,13 +260,13 @@ Optional; one row per bank with the same ten command slots as a button, minus th
 
 Bank Up and Bank Down can send MIDI of their own, for a device that wants to hear about it — a looper's next track, a DAW's next marker — or, with the bank change switched off, to be two more footswitches. Each switch has a list for a short press and one for a long press.
 
-Edit them in the configurator's **Bank Switch** tab, and choose in the **Global** tab whether they are sent: with **Bank switches** at `Bank`, the default, nothing is sent; at `Bank+MIDI` they are sent along with the bank change; at `MIDI only` they are all the switches do. See [Bank Up and Bank Down](#bank-up-and-bank-down).
+Edit the short and long lists in **Bank Switch**. They run in **Bank+MIDI**, **Page+MIDI** and **MIDI only**. See [Bank Up and Bank Down](#bank-up-and-bank-down).
 
 - The lists are the same in every bank, because the switches are navigation and should behave the same wherever you are.
 - Each list fires as a tap, press then release, so a `Toggle` command flips once per press and keeps its own state.
 - **Momentary when held.** With `MIDI only`, tick **Momentary when held** on a switch's short press (`Momentary_Hold` `Y`) and its short list goes out as the switch goes down, and is let go as it comes up, as the other eight switches do: a CC that is not a toggle sends its On value while the switch is held and its Off value on release, and a toggle flips on the press, so a tap latches it and a press held past the long press time sends it back on release, on only while held. Not with a long press list for that switch, which the hold is then for; and not when the switches change bank (firmware 1.42 or later).
 - **A toggle that shows.** With `MIDI only`, a switch whose short press list holds a toggle is a toggle button like the others: its LED stays lit while the toggle is on, following its **Bank Up LED** or **Bank Down LED** mode, and so does its cell on the screen, inverted. With `LED_Feedback` on, the computer sending its CC or note puts it in the state that describes, as it does the buttons', and with `Link_Toggles` a button sending the same follows it, and the other way round; a `Listen` command works there too. Its state is not kept through power off, and goes back to off when the configuration changes (firmware 1.36 or later; before, the LED went out on release and nothing that came in changed the state).
-- `Bank` commands are ignored here: where you end up is decided by the switch itself and by `Bank_Switch_Mode`.
+- All modes ignore `Bank` commands in the bank switches’ lists, including `Page`. To cycle through just Studio and EXPR, put the two banks in the active setlist, enable **Follow the setlist** and select **Page** or **Page+MIDI**. Each page can run its own enter and leave commands.
 - **On the screen.** With `MIDI only`, give the short press of either switch a label and the screen shows all ten switches: five cells to a row, laid out like the pedal, **1 2 3 4** and Bank Up on top, **A B C D** and Bank Down below, the labels in smaller letters so four characters still fit. A switch left without a label shows `UP` or `DN`. One label each, like the lists, in every bank; with no label at all, or with the switches changing bank, the screen is the usual eight cells (firmware 1.08 or later).
 
 *Firmware 0.17 or later.*

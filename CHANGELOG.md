@@ -4,6 +4,8 @@ Firmware versions are shown on the display at boot and reported by the tools.
 
 ## Unreleased
 
+- **Page and Page+MIDI bank switches.** Bank Up and Down step directly between pages in bank or setlist order, keeping expression assignments active. Page+MIDI also runs the switch’s short or long command list. [Bank switches](docs/manual/en/04-banks.md#what-the-bank-switches-send)
+
 - The bank name now always shifts two pixels right on the bank screen and in bank preview. Both configurators accept older CSVs and save only supported global settings.
 
 ## 1.45.1 (OWMO fork)

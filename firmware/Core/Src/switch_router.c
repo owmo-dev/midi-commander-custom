@@ -1018,27 +1018,20 @@ static void show_page(uint8_t bank){
 	state_store_mark_dirty();
 }
 
-/*
- * Page: show another bank's buttons, names and labels in place of this one's,
- * and back again. It is not a bank change: the pedals keep what Exp commands
- * set, what the computer wrote stays on the display, Bank Up and Down move on
- * from the bank itself, and it is the bank that power on comes back to. Going
- * to the page sends its bank's enter commands, and coming back its leave
- * commands, so a page can switch something on the device and back.
- */
+// Show the target directly. The home bank stays active while its pages run
+// their own leave/enter commands, so expression overrides survive each step.
+static void change_to_page(uint8_t target){
+	if(target >= MIDI_NUM_BANKS || target == switch_current_page) return;
+	settle_pending_presses();
+	uint8_t home = home_bank();
+	if(switch_current_page != home) fire_bank_leave_cmds(switch_current_page);
+	page_home = target == home ? 0xFF : home;
+	show_page(target);
+	if(target != home) fire_bank_enter_cmds(target);
+}
+
 static void toggle_page(uint8_t target){
-	if(page_home != 0xFF){
-		uint8_t home = page_home;
-		settle_pending_presses();
-		fire_bank_leave_cmds(switch_current_page);
-		page_home = 0xFF;
-		show_page(home);
-	} else if(target < MIDI_NUM_BANKS && target != switch_current_page){
-		settle_pending_presses();
-		page_home = switch_current_page;
-		show_page(target);
-		fire_bank_enter_cmds(target);
-	}
+	change_to_page(page_home != 0xFF ? page_home : target);
 }
 
 // Requested from interrupt context; applied at the top of handle_switches.
@@ -3293,7 +3286,7 @@ static uint8_t *combo_held_list = NULL;
 
 static uint8_t bank_switch_mode(void){
 	uint8_t v = pGlobalSettings[GLOBAL_SETTINGS_BANK_SWITCH_MODE];
-	return (v <= BANK_SWITCH_MIDI_ONLY) ? v : BANK_SWITCH_BANK_ONLY;
+	return (v <= BANK_SWITCH_PAGE_MIDI) ? v : BANK_SWITCH_BANK_ONLY;
 }
 
 /*
@@ -3345,7 +3338,8 @@ static void bank_switch_flipped(uint8_t list){
 }
 
 static void fire_bank_switch_cmds(uint8_t which, bool long_press){
-	if(bank_switch_mode() == BANK_SWITCH_BANK_ONLY) return;
+	uint8_t mode = bank_switch_mode();
+	if(mode == BANK_SWITCH_BANK_ONLY || mode == BANK_SWITCH_PAGE_ONLY) return;
 
 	uint8_t list = (uint8_t)(which * 2 + (long_press ? 1 : 0));
 	if(list >= BANK_SWITCH_LISTS) return;
@@ -3387,21 +3381,31 @@ static void bank_switch_hold_up(uint8_t which, bool held){
 	if(held && bank_list_has_toggle(list)) fire_bank_switch_cmds(which, false);	// back as it was
 }
 
+static void bank_switch_goto(uint8_t target, bool as_page){
+	if(as_page){
+		preview_end();
+		change_to_page(target);
+	} else goto_bank(target);
+}
+
 // A bank switch pressed: step delta banks, or only preview the bank there
 static void bank_switch_press(uint8_t which, int16_t delta, bool long_press){
 	// A disabled jump still runs the long list, even on a page or in bank preview.
-	if(delta == 0 || bank_switch_mode() == BANK_SWITCH_MIDI_ONLY){
+	uint8_t mode = bank_switch_mode();
+	if(delta == 0 || mode == BANK_SWITCH_MIDI_ONLY){
 		fire_bank_switch_cmds(which, long_press);
 		return;
 	}
+	bool as_page = mode >= BANK_SWITCH_PAGE_ONLY;
+	uint8_t current = as_page ? switch_current_page : home_bank();
 	if(!bank_preview_ms()){
-		goto_bank(bank_step(delta));
+		bank_switch_goto(bank_step_from(current, delta), as_page);
 		fire_bank_switch_cmds(which, long_press);
 		return;
 	}
-	uint8_t from = (preview_bank < MIDI_NUM_BANKS) ? preview_bank : home_bank();
+	uint8_t from = (preview_bank < MIDI_NUM_BANKS) ? preview_bank : current;
 	uint8_t to = bank_step_from(from, delta);
-	if(to == home_bank()){
+	if(to == current){
 		preview_end();	// back where you are: nothing to confirm
 		return;
 	}
@@ -3440,7 +3444,7 @@ static void preview_switches(uint32_t now){
 			target = (uint8_t)((group - 1) * DIRECT_GROUP + i);
 		}
 		latency_begin();
-		goto_bank(target);
+		bank_switch_goto(target, !(preview_bank & PREVIEW_DIRECT) && bank_switch_mode() >= BANK_SWITCH_PAGE_ONLY);
 		latency_end();
 	}
 	uint32_t wait = (preview_bank & PREVIEW_DIRECT) ? DIRECT_WAIT_MS : bank_preview_ms();

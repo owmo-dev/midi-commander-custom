@@ -822,7 +822,7 @@ function renderExpression(main) {
 
 // --- Bank switches -------------------------------------------------------------
 function renderBankSwitch(main) {
-  main.append(h("p", { class: "hint" }, "What Bank Down and Bank Up send when Bank switches (Global) is Bank+MIDI or MIDI only. With MIDI only, a label on the short press puts the switch on the screen, five cells to a row, and Momentary when held sends the short list as the switch goes down and lets it go on release: a toggle held goes back as it was (firmware 1.42; not with a long press list)."));
+  main.append(h("p", { class: "hint" }, "Page and Page+MIDI step through banks as pages in bank or setlist order. Bank+MIDI, Page+MIDI and MIDI only run these switch commands. All modes ignore Bank commands in these lists. With MIDI only, a label on the short press puts the switch on the screen, five cells to a row, and Momentary when held sends the short list as the switch goes down and lets it go on release: a toggle held goes back as it was (firmware 1.42; not with a long press list)."));
   for (const [sw, press] of [["Down", "Short"], ["Down", "Long"], ["Up", "Short"], ["Up", "Long"]]) {
     const r = rowOf("BankSwitch_Settings", { Switch: sw, Press: press });
     const label = press === "Short"

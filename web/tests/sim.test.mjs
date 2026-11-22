@@ -345,6 +345,79 @@ test("If reads Bank Up and Bank Down on both press and release", async () => {
   }
 });
 
+test("bank switches step directly through pages and ignore Bank commands in their lists", async () => {
+  for (const mode of ["Page", "Page+MIDI"]) {
+    const sim = simWithDemo(await flashWith(packDemo([
+      "g = d['Global_Settings']",
+      `g.loc[g.Label == 'Bank_Switch_Mode', 'Value'] = '${mode}'`,
+      "g.loc[g.Label == 'Bank_Jump_Step', 'Value'] = '0'",
+      "g.loc[g.Label == 'Bank_Preview', 'Value'] = '0'",
+      "d['Setlist'] = d['Setlist'].iloc[:3].assign(Bank_Number=['0', '12', '31'])",
+      "d.pop('BankEnter_Settings')",
+      "s = d['BankSwitch_Settings']",
+      "s.loc[:, ['C_CommandType', 'C_KeyMode_(Key)', 'C_OnValue_(CC/PB)']] = ['Bank', 'Page', '5']",
+    ].join("\n"))));
+    const pedal = await Pedal.open(sim.access);
+    const seen = watch(sim);
+    const switchCCs = () => seen.splice(0).filter((m) => /^USB b0 5[1-4] /.test(m));
+
+    for (const [id, destination] of [[9, 12], [9, 31], [8, 12], [9, 31], [9, 0], [8, 31]]) {
+      tap(sim, id);
+      assert.equal((await pedal.getState()).bank, destination);
+      const cc = id === 9 ? "52" : "51";
+      assert.deepEqual(switchCCs(), mode === "Page+MIDI" ? [`USB b0 ${cc} 7f`, `USB b0 ${cc} 00`] : []);
+    }
+    sim.footswitch(9, true);
+    sim.run(800);
+    sim.footswitch(9, false);
+    sim.run(80);
+    assert.equal((await pedal.getState()).bank, 31, "zero jump keeps the current page");
+    assert.deepEqual(switchCCs(), mode === "Page+MIDI" ? ["USB b0 54 7f"] : []);
+  }
+});
+
+test("page preview follows bank numbers and keeps the expression assignment across pages", async () => {
+  const sim = simWithDemo(await flashWith(packDemo([
+    "g = d['Global_Settings']",
+    "for label, value in [('Bank_Switch_Mode','Page+MIDI'), ('Bank_Preview','5'), ('Setlist_Mode','N'), ('Bank_Jump_Step','2')]:",
+    "    g.loc[g.Label == label, 'Value'] = value",
+    "d.pop('BankEnter_Settings')",
+    "b = d['Button_Settings']; row = (b.Bank_Number == '31') & (b.Button_Identifier == '1')",
+    "b.loc[row, ['A_CommandType','A_Channel_(PC/CC/Note/PB)','A_Number_(PC/CC/Note)','A_OnValue_(CC/PB)','A_Toggle_(CC/PB/Note)']] = ['Exp','3','74','1','Y']",
+    "e = d['Expression_Settings']; e.loc[e.Pedal == '1', ['Auto_Button','Toe_Button','Takeover']] = ['', '', 'Jump']",
+  ].join("\n"))));
+  const pedal = await Pedal.open(sim.access);
+  const seen = watch(sim);
+  const confirm = async (from, destination) => {
+    const state = await pedal.getState();
+    assert.equal(state.bank, from);
+    assert.equal(state.preview, destination);
+    tap(sim, 3);
+    assert.equal((await pedal.getState()).bank, destination);
+    assert.ok(!seen.splice(0).some((m) => /^USB b0 5[1-4] /.test(m)), "preview skips switch MIDI");
+  };
+  const movePedal = (value) => {
+    sim.pedal(0, value);
+    sim.run(350);
+    assert.ok(seen.splice(0).some((m) => m.startsWith("USB b2 4a ")), "pedal 1 keeps channel 3, CC 74");
+  };
+  tap(sim, 8);
+  await confirm(0, 31);
+  tap(sim, 0); // engage the Exp toggle on page 31
+  tap(sim, 8);
+  await confirm(31, 30);
+  movePedal(2000);
+  sim.footswitch(9, true);
+  sim.run(800);
+  sim.footswitch(9, false);
+  sim.run(80);
+  await confirm(30, 0); // long jump of two pages returns home
+  movePedal(3000);
+  tap(sim, 8);
+  await confirm(0, 31);
+  assert.equal((await pedal.getState()).toggles[0], true);
+});
+
 test("zero bank jump keeps the current page and runs only the bank switch long list", async () => {
   for (const [mode, preview] of [["Bank", 0], ["Bank+MIDI", 0], ["Bank+MIDI", 5]]) {
     const sim = simWithDemo(await flashWith(packDemo([

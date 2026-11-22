@@ -183,10 +183,14 @@ def pack_global_settings(df):
             cc = 0
     bin_list[GLOBAL_SETTINGS_BANK_CHANGE_CC] = cc
 
-    # What the Bank Up/Down switches do: change bank, both, or MIDI only
+    # Global Bank Up/Down switch mode
     mode_text = str(df.loc["Bank_Switch_Mode", "Value"]).strip().upper() if "Bank_Switch_Mode" in df.index else "BANK"
     mode_text = mode_text.replace(" ", "").replace("_", "")
-    if mode_text.startswith("MIDIONLY") or mode_text == "MIDI":
+    if mode_text == "PAGE":
+        bsm = 3
+    elif mode_text == "PAGE+MIDI":
+        bsm = 4
+    elif mode_text.startswith("MIDIONLY") or mode_text == "MIDI":
         bsm = 2
     elif "MIDI" in mode_text:
         bsm = 1

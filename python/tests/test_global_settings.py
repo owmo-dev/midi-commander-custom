@@ -50,7 +50,7 @@ class BankSwitchTest(unittest.TestCase):
             self.assertEqual(row["A_CommandType"], "")
 
     def test_mode_round_trips(self):
-        for text, expected in (("Bank", 0), ("Bank+MIDI", 1), ("MIDI only", 2)):
+        for text, expected in (("Bank", 0), ("Bank+MIDI", 1), ("MIDI only", 2), ("Page", 3), ("Page+MIDI", 4)):
             sections = read_config_csv(DEMO_CSV)
             g = sections["Global_Settings"]
             g.loc[g["Label"] == "Bank_Switch_Mode", "Value"] = text

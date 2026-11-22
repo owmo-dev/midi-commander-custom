@@ -21,7 +21,7 @@ Una columna opcional `Notes` guarda una nota del banco, que se ve en la [vista S
 
 ## Bank Up y Bank Down
 
-Los dos pulsadores de la derecha recorren los bancos. Una pulsación corta en **Bank Up** o **Bank Down** avanza o retrocede un banco, y actúa al soltar. Si lo mantienes más de `Long_Press_ms` (500 ms si no lo cambias), salta varios bancos de golpe en cuanto se cumple ese tiempo; cuántos lo decide **Long press jumps** en la pestaña **Global** del configurador, `Bank_Jump_Step` en el CSV, de 0 a 31, con 8 por defecto. Elige 0 para seguir en el mismo banco o página al mantener el pulsador. En `Bank+MIDI` se ejecuta su lista Long una vez al alcanzar el umbral, incluso con la vista previa activada. Los dos dan la vuelta, del 31 al 0 y del 0 al 31.
+Los dos pulsadores de la derecha recorren los bancos. Una pulsación corta en **Bank Up** o **Bank Down** avanza o retrocede un banco, y actúa al soltar. Si lo mantienes más de `Long_Press_ms` (500 ms si no lo cambias), salta varios bancos de golpe en cuanto se cumple ese tiempo; cuántos lo decide **Long press jumps** en la pestaña **Global** del configurador, `Bank_Jump_Step` en el CSV, de 0 a 31, con 8 por defecto. Elige 0 para seguir en el mismo banco o página al mantener el pulsador. En `Bank+MIDI` y `Page+MIDI` se ejecuta su lista Long una vez al alcanzar el umbral, incluso con la vista previa activada. Los dos dan la vuelta, del 31 al 0 y del 0 al 31.
 
 Lo que hacen se cambia con **Bank switches** en la pestaña **Global**, `Bank_Switch_Mode`:
 
@@ -30,6 +30,8 @@ Lo que hacen se cambia con **Bank switches** en la pestaña **Global**, `Bank_Sw
 | `Bank` | Cambian de banco y nada más. Es lo predeterminado. |
 | `Bank+MIDI` | Cambian de banco y además envían sus propios comandos (ver [Lo que envían los pulsadores de banco](#lo-que-envían-los-pulsadores-de-banco)). |
 | `MIDI only` | Envían sus propios comandos y nunca cambian de banco, con lo que la pedalera se convierte en un controlador de diez pulsadores sin más. |
+| `Page` | Recorren los números de banco o el setlist activo como páginas. Se conservan las asignaciones de expresión. |
+| `Page+MIDI` | Recorren las mismas páginas y también ejecutan la lista de pulsación corta o larga del pulsador. |
 
 Si mantienes Bank Down y Bank Up a la vez durante dos segundos, se abre el [editor de la pedalera](10-editing-on-the-pedal.md), salvo que **Lock on-pedal editing** (`Edit_Lock`) en la pestaña **Global** lo desactive; ver [Bloquear el editor](10-editing-on-the-pedal.md#bloquear-el-editor).
 
@@ -130,13 +132,13 @@ En mitad de una canción, un pie que roza Bank Up cambia el patch, y con él la 
 Actívala con **Preview banks** en la pestaña **Global**, `Bank_Preview` en el CSV: los segundos que una vista previa te espera, de 1 a 60. 0 la desactiva, y es lo predeterminado. En el editor de la pedalera es `PREVIEW`.
 
 - Una pulsación, corta o larga, en Bank Up / Down mueve el banco que se enseña igual que habría movido el propio banco, setlist incluido. La pantalla muestra el nombre de ese banco invertido, en blanco con letras negras, sobre las etiquetas de sus botones.
-- Recorrer la vista previa no envía MIDI. Con **Long press jumps** en 0, mantener el pulsador conserva la vista previa y ejecuta su lista Long en `Bank+MIDI`.
+- Recorrer la vista previa no envía MIDI. Con **Long press jumps** en 0, mantener el pulsador conserva la vista previa y ejecuta su lista Long en `Bank+MIDI` y `Page+MIDI`.
 - El primero de los ocho botones que baja lo confirma. La pedalera va allí como lo habrían hecho Bank Up / Down, con los comandos de salida y de entrada, y esa pulsación no hace nada más, ni tampoco al soltarla. Un botón que ya estaba pisado cuando empezó la vista previa termina su pulsación con normalidad.
-- Al confirmar tampoco se envían los comandos propios de los pulsadores de banco (`Bank+MIDI`).
+- Al confirmar tampoco se envían los comandos propios de los pulsadores de banco (`Bank+MIDI` / `Page+MIDI`).
 - Volver al banco en el que estás quita la vista previa, y también dejarla sin tocar durante los segundos puestos: la pantalla vuelve al banco en el que estás y no ha cambiado nada.
 - Un cambio de banco por MIDI, un cambio de configuración o abrir el editor también la quitan.
 - Las lecturas de tempo y los textos del ordenador esperan a que termine la vista previa.
-- Con **Bank switches** en `MIDI only` los pulsadores de banco no cambian de banco, así que no hay nada que previsualizar.
+- En **Page** y **Page+MIDI**, confirmar la vista previa abre la página seleccionada. **MIDI only** omite la vista previa.
 
 *Firmware 0.66 o posterior.*
 
@@ -213,7 +215,7 @@ La página es un banco como cualquier otro y podrías usarla por su cuenta, pero
 
 - Al volver no se envía de nuevo nada del banco: sus comandos de entrada salieron cuando entraste en él.
 - Los comandos de entrada de la página salen cuando se muestra, y los de salida cuando vuelves, así que una página puede encender algo en el equipo y volver a apagarlo. Déjalos vacíos para una página que solo cambia los pulsadores.
-- Bank Up / Down, los comandos `Bank` relativos y el setlist avanzan desde el banco, no desde la página, y salen de la página por el camino.
+- En **Page** y **Page+MIDI**, Bank Up / Down avanzan o retroceden desde la página visible y dan la vuelta por ambos extremos. En **Bank** y **Bank+MIDI**, recorren los bancos desde el banco de origen. Los comandos `Bank` relativos también parten del banco de origen.
 - Los pedales de expresión conservan los `BankExpression_Settings` del banco y lo que hayan puesto los comandos `Exp`. Sus botones de punta y talón pulsan el botón de la página que se muestra; el auto-engage espera a que vuelvas al banco.
 - El texto que el ordenador escribió hasta el próximo cambio de banco se queda en la pantalla.
 - Tras apagar y encender con `Remember_State`, la pedalera vuelve al banco, no a su página. Cada página guarda sus propios estados de toggle, como cualquier banco.
@@ -258,13 +260,13 @@ Opcional; una fila por banco con las mismas diez casillas de comando que un bot�
 
 Bank Up y Bank Down pueden enviar su propio MIDI, para un equipo que quiera enterarse —la siguiente pista de un looper, el siguiente marcador de un DAW— o, con el cambio de banco desactivado, para tener dos pulsadores más. Cada pulsador tiene una lista para la pulsación corta y otra para la larga.
 
-Se editan en la pestaña **Bank Switch** del configurador, y en la pestaña **Global** eliges si se envían: con **Bank switches** en `Bank`, lo predeterminado, no se envía nada; en `Bank+MIDI` se envían junto con el cambio de banco; en `MIDI only` es lo único que hacen los pulsadores. Ver [Bank Up y Bank Down](#bank-up-y-bank-down).
+Edita las listas de pulsación corta y larga en **Bank Switch**. Se ejecutan en **Bank+MIDI**, **Page+MIDI** y **MIDI only**. Ver [Bank Up y Bank Down](#bank-up-y-bank-down).
 
 - Las listas son las mismas en todos los bancos, porque los pulsadores sirven para moverse y deben comportarse igual estés donde estés.
 - Cada lista sale como un toque, pulsar y soltar, así que un comando `Toggle` cambia una vez por pulsación y guarda su propio estado.
 - **Momentáneo al mantener.** Con `MIDI only`, marca **Momentary when held** en la pulsación corta de un pulsador (`Momentary_Hold` `Y`) y su lista corta sale al pisarlo y se suelta al levantar el pie, como en los otros ocho pulsadores: un CC que no es toggle envía su valor On mientras lo mantienes pisado y su valor Off al soltarlo, y un toggle cambia al pisar, así que un toque lo deja fijo y una pulsación mantenida más allá del tiempo de pulsación larga lo devuelve al soltar, encendido solo mientras lo pisas. No con una lista de pulsación larga en ese pulsador, que es entonces para lo que sirve mantenerlo; y no cuando los pulsadores cambian de banco (firmware 1.42 o posterior).
 - **Un toggle que se ve.** Con `MIDI only`, un pulsador cuya lista de pulsación corta tiene un toggle es un botón toggle como los demás: su LED se queda encendido mientras el toggle está activado, según su modo **Bank Up LED** o **Bank Down LED**, y lo mismo su casilla en la pantalla, invertida. Con `LED_Feedback` activado, que el ordenador envíe su CC o su nota lo pone en el estado que indica, como a los botones, y con `Link_Toggles` un botón que envía lo mismo lo sigue, y al revés; un comando `Listen` también funciona ahí. Su estado no se guarda al apagar, y vuelve a desactivado cuando cambia la configuración (firmware 1.36 o posterior; antes, el LED se apagaba al soltar y nada de lo que llegaba cambiaba el estado).
-- Los comandos `Bank` se ignoran aquí: adónde llegas lo deciden el propio pulsador y `Bank_Switch_Mode`.
+- En todos los modos se ignoran los comandos `Bank` de las listas de los pulsadores de banco, incluido `Page`. Para alternar entre Studio y EXPR, incluye los dos bancos en el setlist activo, activa **Follow the setlist** y elige **Page** o **Page+MIDI**. Cada página puede ejecutar sus comandos de entrada y salida.
 - **En la pantalla.** Con `MIDI only`, pon una etiqueta a la pulsación corta de cualquiera de los dos pulsadores y la pantalla muestra los diez: cinco casillas por fila, colocadas como en la pedalera, **1 2 3 4** y Bank Up arriba, **A B C D** y Bank Down abajo, con las etiquetas en letra más pequeña para que sigan cabiendo cuatro caracteres. Un pulsador sin etiqueta muestra `UP` o `DN`. Una etiqueta por pulsador, como las listas, la misma en todos los bancos; sin ninguna etiqueta, o con los pulsadores cambiando de banco, la pantalla son las ocho casillas de siempre (firmware 1.08 o posterior).
 
 *Firmware 0.17 o posterior.*

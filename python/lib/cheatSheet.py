@@ -239,7 +239,7 @@ class _Sheet:
         mode = self.settings.get("Bank_Switch_Mode", "Bank")
         for r in self.s.get("BankSwitch_Settings", []):
             text = " ".join(self.commands(r))
-            if text and mode != "Bank":
+            if text and mode not in ("Bank", "Page"):
                 label = f" {r['Label']}" if r.get("Label") else ""
                 rows.append((f"Bank {r['Switch'].lower()}, {r['Press'].lower()} press{label}", text))
         for r in self.s.get("Combo_Settings", []):

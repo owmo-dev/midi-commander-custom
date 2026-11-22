@@ -3323,10 +3323,10 @@ class MidiCommanderGUI(ctk.CTk):
         Help(
             top,
             "Commands sent by the Bank Down and Bank Up switches, the same in every bank.",
-            "Bank_Switch_Mode in the Global tab decides whether they also change bank (Bank+MIDI), "
-            "change bank silently (Bank) or stop changing bank altogether (MIDI only), which turns "
-            "the pedal into a ten switch controller. Each list fires as a tap, press then release, "
-            "so toggles flip once, unless Momentary when held is on for the switch. Bank commands are ignored here. With MIDI only, a label on the "
+            "Global → Bank switches sets the mode. Bank steps through banks. Bank+MIDI also runs "
+            "this list. MIDI only runs the list as a tap, or on press and release with Momentary when held. "
+            "Page steps through banks as pages in bank or setlist order. "
+            "Page+MIDI also runs this list. All modes ignore Bank commands in these lists. With MIDI only, a label on the "
             "short press puts the switch on the screen, five cells to a row.",
         ).pack(anchor="w")
 

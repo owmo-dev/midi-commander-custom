@@ -417,6 +417,9 @@
 #define BANK_SWITCH_BANK_MIDI	(1)	// change bank and send the switch's commands
 #define BANK_SWITCH_MIDI_ONLY	(2)	// send the commands only, never change bank
 
+#define BANK_SWITCH_PAGE_ONLY	(3)	// step through banks as pages
+#define BANK_SWITCH_PAGE_MIDI	(4)	// step through pages and run the switch's commands
+
 #define REMOTE_OFF		(0)
 #define REMOTE_CC		(1)
 #define REMOTE_NOTE		(2)
