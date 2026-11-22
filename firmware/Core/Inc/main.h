@@ -56,7 +56,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void Error(char *msg);
-// The ADC, for the expression pedals (sim.c in the simulator)
+// The ADC, for the expression pedals and battery gauge (sim.c in the simulator)
 bool adc_sample(uint32_t channel, uint32_t *value);
 void adc_stop(void);
 // A pin's four configuration bits, CNF and MODE, for gpio_config

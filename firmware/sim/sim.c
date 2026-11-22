@@ -180,9 +180,14 @@ static void uart_interrupts(void){
 	}
 }
 
-// --- The expression pedals --------------------------------------------------
+// Simulate the power sense inputs at 12 ADC counts per centivolt.
+static uint32_t supply_cv = 320; // USB power at startup
+EXPORT(sim_set_supply_cv) void sim_set_supply_cv(uint32_t cv){ supply_cv = cv; }
+
 bool adc_sample(uint32_t channel, uint32_t *value){
-	*value = adc_value[channel == ADC_CHANNEL_8 ? 1 : 0];
+	if(channel == ADC_CHANNEL_1) *value = supply_cv * 12;
+	else if(channel == ADC_CHANNEL_VREFINT) *value = 120 * 12;
+	else *value = adc_value[channel == ADC_CHANNEL_8 ? 1 : 0];
 	return true;
 }
 void adc_stop(void){}

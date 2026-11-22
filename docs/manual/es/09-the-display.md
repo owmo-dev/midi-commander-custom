@@ -11,7 +11,7 @@ La pantalla de 128×64 de la pedalera te dice dónde estás y qué está encendi
 Lo que muestra la pantalla casi todo el tiempo:
 
 - **Línea de arriba, a la izquierda:** el nombre del banco, 4 caracteres en letra grande. La letra grande solo tiene mayúsculas: las minúsculas salen ahí como mayúsculas, y `` ` ``, `{`, `|`, `}` y `~` como `?`; la pequeña tiene las dos.
-- **Línea de arriba, a la derecha:** su línea de información, 8 caracteres en letra pequeña.
+- **Línea de arriba, a la derecha:** su línea de información, 8 caracteres en letra pequeña. Con pilas, un indicador de siete niveles aparece justo encima, a la izquierda de la marca de actividad MIDI por USB. Desaparece al alimentar el pedal por USB o cuando el texto grande o una vista a pantalla completa necesita ese espacio.
 - **Debajo:** una rejilla de 2×4 colocada como la pedalera, con los botones **1 2 3 4** en la fila de arriba y **A B C D** en la de abajo. Cada casilla muestra la etiqueta del botón, o su identificador si no tiene.
 - **Toggles:** la casilla de un toggle se dibuja invertida mientras está encendido, así que el estado de todo el banco se ve de un vistazo.
 - **Diez pulsadores:** con `Bank_Switch_Mode` en `MIDI only` y una etiqueta en Bank Down o Bank Up, la rejilla es de 2×5, con los pulsadores de banco en la quinta columna y las etiquetas en letra más pequeña ([En la pantalla](04-banks.md#lo-que-envían-los-pulsadores-de-banco)).

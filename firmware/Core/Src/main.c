@@ -398,7 +398,7 @@ static void MX_GPIO_Init(void)
   gpio_config(GPIOA, LED_D_Pin|LED_2_Pin, PIN_OUT);
   gpio_config(GPIOB, LED_E_Pin|LED_5_Pin|LED_4_Pin|LED_3_Pin|LED_1_Pin|LED_A_Pin, PIN_OUT);
   gpio_config(GPIOB, SW_5_Pin|SW_4_Pin|SW_3_Pin|SW_A_Pin, PIN_IN_PULL);
-  gpio_config(EXP1_GPIO_Port, EXP1_Pin, PIN_ANALOG);
+  gpio_config(GPIOA, GPIO_PIN_1 | EXP1_Pin, PIN_ANALOG);  // PA1 power sense and PA7 expression
   gpio_config(EXP2_GPIO_Port, EXP2_Pin, PIN_ANALOG);
 }
 
@@ -430,8 +430,8 @@ static void adc_on(void)
 }
 
 /*
- * The ADC, one conversion at a time on the channel the expression pedals ask
- * for, started by software. Register by register rather than through the HAL,
+ * The ADC, one software-started conversion at a time for the expression
+ * pedals and the battery gauge. Register by register rather than through the HAL,
  * which took a kilobyte and a half. Calibrated once here, and off between
  * readings, as it always was.
  */
@@ -439,7 +439,7 @@ static void MX_ADC1_Init(void)
 {
   __HAL_RCC_ADC1_CLK_ENABLE();
   ADC1->CR1 = 0;
-  ADC1->CR2 = ADC_CR2_EXTSEL | ADC_CR2_EXTTRIG;	// EXTSEL 111: SWSTART
+  ADC1->CR2 = ADC_CR2_TSVREFE | ADC_CR2_EXTSEL | ADC_CR2_EXTTRIG;	// EXTSEL 111: SWSTART
   ADC1->SQR1 = 0;	// a single conversion
   adc_on();
   ADC1->CR2 |= ADC_CR2_RSTCAL;
@@ -455,7 +455,7 @@ static void MX_ADC1_Init(void)
   adc_stop();
 }
 
-// One conversion of channel 7 or 8, sampled for 239.5 cycles; false if it
+// One conversion of the requested channel, sampled for 239.5 cycles; false if it
 // did not finish within 2 ms
 bool adc_sample(uint32_t channel, uint32_t *value)
 {

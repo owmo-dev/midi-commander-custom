@@ -126,6 +126,8 @@ HAL_StatusTypeDef HAL_FLASH_Program(uint32_t type, uint32_t address, uint64_t da
 HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *init, uint32_t *page_error);
 
 // --- ADC (the expression pedals) --------------------------------------------
+#define ADC_CHANNEL_1                  (1U)
+#define ADC_CHANNEL_VREFINT            (17U)
 #define ADC_CHANNEL_7				(7U)
 #define ADC_CHANNEL_8				(8U)
 

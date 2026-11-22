@@ -2381,6 +2381,49 @@ async function monitorSim(monitor, gig = "N") {
 // The MIDI monitor's mark, in the top right corner
 const markIs = (sim, on) => [0, 1, 2].every((y) => [124, 125, 126, 127].every((x) => lit(sim, x, y) === on));
 
+test("battery gauge tracks the stock thresholds and shares the header with the MIDI mark", async () => {
+  const sim = await monitorSim("In");
+  const pixels = () => Array.from(sim.screen().slice(111, 123), col => col & 31);
+  const hidden = Array(12).fill(0);
+  const gauge = fill => [31, ...Array(fill).fill(31), ...Array(9 - fill).fill(17), 31, 14];
+  function supply(cv) {
+    sim.e.sim_set_supply_cv(cv);
+    sim.run(2100);
+  }
+
+  assert.deepEqual(pixels(), hidden, "USB power at startup");
+  for (const [cv, fill] of [[217, 0], [218, 1], [228, 3], [238, 4], [248, 6], [258, 7], [268, 9], [304, 9]]) {
+    supply(cv);
+    assert.deepEqual(pixels(), gauge(fill), cv + " centivolts");
+  }
+  sim.usbIn([0xb2, 7, 100]);
+  sim.run(20);
+  assert.ok(markIs(sim, true));
+  assert.deepEqual(pixels(), gauge(9));
+  sim.run(200);
+  assert.ok(markIs(sim, false));
+  assert.deepEqual(pixels(), gauge(9));
+  supply(305);
+  assert.deepEqual(pixels(), hidden);
+  supply(238);
+  assert.deepEqual(pixels(), gauge(4), "back on battery");
+
+  // A short name in whole-line large text reserves the header, even where it is blank.
+  sim.usbIn([0xf0, 0x7d, 0x48, 2, 1, 65, 0xf7]);
+  sim.run(100);
+  supply(218);
+  assert.deepEqual(pixels(), hidden);
+  sim.usbIn([0xf0, 0x7d, 0x48, 2, 1, 0xf7]);
+  sim.run(100);
+  assert.deepEqual(pixels(), gauge(1));
+
+  const gig = await monitorSim("Off", "Y");
+  const before = Uint8Array.from(gig.screen());
+  gig.e.sim_set_supply_cv(248);
+  gig.run(2100);
+  assert.deepEqual(gig.screen(), before, "battery sampling leaves the gig view intact");
+});
+
 test("MIDI_Monitor: a mark as MIDI comes in over USB, and the last message received or sent (before 1.35, nothing showed)", async () => {
   const sim = await monitorSim("In");
   assert.ok(markIs(sim, false));
