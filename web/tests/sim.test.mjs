@@ -2381,32 +2381,37 @@ async function monitorSim(monitor, gig = "N") {
 // The MIDI monitor's mark, in the top right corner
 const markIs = (sim, on) => [0, 1, 2].every((y) => [124, 125, 126, 127].every((x) => lit(sim, x, y) === on));
 
-test("battery gauge tracks the stock thresholds and shares the header with the MIDI mark", async () => {
+test("two-state battery indicator tracks the warning and USB thresholds and shares the header with the MIDI mark", async () => {
   const sim = await monitorSim("In");
   const pixels = () => Array.from(sim.screen().slice(111, 123), col => col & 31);
   const hidden = Array(12).fill(0);
-  const gauge = fill => [31, ...Array(fill).fill(31), ...Array(9 - fill).fill(17), 31, 14];
+  const low = [31, ...Array(9).fill(17), 31, 14];
+  const normal = [...Array(11).fill(31), 14];
   function supply(cv) {
     sim.e.sim_set_supply_cv(cv);
     sim.run(2100);
   }
 
   assert.deepEqual(pixels(), hidden, "USB power at startup");
-  for (const [cv, fill] of [[217, 0], [218, 1], [228, 3], [238, 4], [248, 6], [258, 7], [268, 9], [304, 9]]) {
+  for (const [cv, expected] of [[228, normal], [227, low], [200, low], [228, normal], [304, normal]]) {
     supply(cv);
-    assert.deepEqual(pixels(), gauge(fill), cv + " centivolts");
+    assert.deepEqual(pixels(), expected, cv + " centivolts");
   }
+  sim.e.sim_set_supply_cv(227);
+  sim.run(1000);
+  assert.deepEqual(pixels(), normal, "one low sample does not trigger the warning");
+  supply(304);
   sim.usbIn([0xb2, 7, 100]);
   sim.run(20);
   assert.ok(markIs(sim, true));
-  assert.deepEqual(pixels(), gauge(9));
+  assert.deepEqual(pixels(), normal);
   sim.run(200);
   assert.ok(markIs(sim, false));
-  assert.deepEqual(pixels(), gauge(9));
+  assert.deepEqual(pixels(), normal);
   supply(305);
   assert.deepEqual(pixels(), hidden);
   supply(238);
-  assert.deepEqual(pixels(), gauge(4), "back on battery");
+  assert.deepEqual(pixels(), normal, "back on battery");
 
   // A short name in whole-line large text reserves the header, even where it is blank.
   sim.usbIn([0xf0, 0x7d, 0x48, 2, 1, 65, 0xf7]);
@@ -2415,7 +2420,7 @@ test("battery gauge tracks the stock thresholds and shares the header with the M
   assert.deepEqual(pixels(), hidden);
   sim.usbIn([0xf0, 0x7d, 0x48, 2, 1, 0xf7]);
   sim.run(100);
-  assert.deepEqual(pixels(), gauge(1));
+  assert.deepEqual(pixels(), low);
 
   const gig = await monitorSim("Off", "Y");
   const before = Uint8Array.from(gig.screen());

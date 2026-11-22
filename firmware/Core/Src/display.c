@@ -123,8 +123,8 @@ static volatile uint32_t monitor_in_tick;
 static volatile uint8_t monitor_in_seen = 0;
 // The 12x5 battery fits above the info text with a pixel before the MIDI mark.
 #define BATTERY_X       (MARK_X - 13)
-static uint8_t battery_level;   // 0 hidden (USB or unknown), 1 empty through 7 full
-static bool battery_space;      // the current header leaves these pixels free
+enum { BATTERY_HIDDEN, BATTERY_NORMAL, BATTERY_LOW };
+static uint8_t battery_state;
 static uint8_t mark_shown = 0;	// as the buffer has it
 
 /*
@@ -292,10 +292,10 @@ static void fill_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, SSD1306_COLOR 
 }
 
 static void draw_battery(void){
-	if(!battery_level) return;
-	ssd1306_DrawRectangle(BATTERY_X, 0, BATTERY_X + 10, 4, White);
+	if(battery_state == BATTERY_HIDDEN) return;
+	fill_rect(BATTERY_X, 0, 11, 5, White);
 	fill_rect(BATTERY_X + 11, 1, 1, 3, White);
-	fill_rect(BATTERY_X + 1, 1, (battery_level - 1) * 3 / 2, 3, White);
+	if(battery_state == BATTERY_LOW) fill_rect(BATTERY_X + 1, 1, 9, 3, Black);
 }
 
 // Stock firmware uses PA1 relative to the internal 1.20 V reference for the
@@ -311,20 +311,16 @@ static bool battery_changed(void){
 	bool ok = adc_sample(ADC_CHANNEL_1, &pin) && adc_sample(ADC_CHANNEL_VREFINT, &ref);
 	adc_stop();
 	if(!ok || !ref) return false;
+	// On PA1, 3.05 V marks USB and below 2.28 V the stock gauge has at most one bar.
 	uint32_t cv = 120 * pin / ref;
-	uint8_t level = 0;
-	if(cv < 305){
-		level = 1; // empty outline below 2.18 V
-		for(unsigned threshold = 218; threshold <= 268 && cv >= threshold; threshold += 10){
-			level++;
-		}
-	}
-	if(level != previous){
-		previous = level;
+	uint8_t state = BATTERY_HIDDEN;
+	if(cv < 305) state = cv < 228 ? BATTERY_LOW : BATTERY_NORMAL;
+	if(state != previous){
+		previous = state;
 		return false;
 	}
-	if(level == battery_level) return false;
-	battery_level = level;
+	if(state == battery_state) return false;
+	battery_state = state;
 	return true;
 }
 
@@ -680,7 +676,6 @@ static void draw_top(uint8_t bank, uint8_t over_place, const char *override){
 		draw_text(0, 0, SCREEN_SHOWN_W, text[DISPLAY_TEXT_LINE_LARGE], Font_11x18);
 		return;
 	}
-	battery_space = true;
 	draw_battery();
 	if(text[DISPLAY_TEXT_LINE_SMALL][0]){
 		draw_text(0, 6, SCREEN_SHOWN_W, text[DISPLAY_TEXT_LINE_SMALL], Font_7x10);
@@ -768,7 +763,6 @@ static void draw_gig(uint8_t bank, uint8_t over_place, const char *override){
 
 // The top line, or in the gig view the whole screen, as it stands
 static void draw_head(uint8_t bank, uint8_t over_place, const char *override){
-	battery_space = false;
 	if(gig_showing()) draw_gig(bank, over_place, override);
 	else draw_top(bank, over_place, override);
 }
@@ -1111,7 +1105,6 @@ static void draw_overlay(void){
 	}
 	if(overlay_wide){
 		fill_rect(0, 0, SSD1306_WIDTH, ROW_TOP_Y - 1, Black);
-		battery_space = true;
 		draw_battery();
 		ssd1306_SetCursor(0, 6);
 	} else {
@@ -1540,12 +1533,7 @@ void display_task(void){
 		if(refresh_pending) draw_preview();
 		return;
 	}
-	if(!notice_up() && battery_changed() && battery_space && !refresh_pending){
-		fill_rect(BATTERY_X, 0, 12, 5, Black);
-		draw_battery();
-		ssd1306_UpdateLines(0, 0);
-		return;
-	}
+	if(battery_changed()) refresh_pending = 1;
 	// The mark comes and goes on its own, the rest of the screen as it is
 	if(!refresh_pending && !notice_up() && mark_wanted() != mark_shown){
 		mark_shown = !mark_shown;
