@@ -522,7 +522,8 @@ class TakeoverTest(unittest.TestCase):
         for a, one in enumerate(names):
             for b, two in enumerate(names):
                 packed = self.pack_with(one, two)
-                self.assertEqual(self.byte(packed), 0xFF if a == b == 0 else 0xF0 | a | b << 2, (one, two))
+                expected = {(0, 0): 0xFF, (3, 3): 0x0F}.get((a, b), 0xF0 | a | b << 2)
+                self.assertEqual(self.byte(packed), expected, (one, two))
                 exp = unpacker.unpack_config(packed)[4]
                 self.assertEqual(list(exp["Takeover"]), [one, two])
 
@@ -587,14 +588,16 @@ class DisplayTest(unittest.TestCase):
         self.assertEqual(list(unpacker.unpack_config(packed)[4]["Display"]), ["Bar", "Number"])
 
     def test_every_pair_round_trips(self):
-        names = ["Off", "Number", "Bar"]
+        names = ["Off", "Number", "Bar", "Bar+Label"]
         for a, one in enumerate(names):
             for b, two in enumerate(names):
                 packed = self.pack_with(one, two)
-                self.assertEqual(self.byte(packed), 0xFF if a == b == 0 else 0xF0 | a | b << 2, (one, two))
+                expected = {(0, 0): 0xFF, (3, 3): 0x0F}.get((a, b), 0xF0 | a | b << 2)
+                self.assertEqual(self.byte(packed), expected, (one, two))
                 self.assertEqual(list(unpacker.unpack_config(packed)[4]["Display"]), [one, two])
 
     def test_spellings(self):
+        self.assertEqual(self.pack_with("Details", "Off"), self.pack_with("Bar+Label", "Off"))
         self.assertEqual(self.byte(self.pack_with("bar", "NUMBER")), 0xF0 | 2 | 1 << 2)
         self.assertEqual(self.byte(self.pack_with("", "nan")), 0xFF)
         with self.assertRaises(ValueError):
@@ -623,7 +626,7 @@ class DisplayTest(unittest.TestCase):
     def test_matches_firmware(self):
         text = open(os.path.join(FIRMWARE, "Core", "Inc", "flash_midi_settings.h")).read()
         self.assertIn(f"#define EXT2_EXP_DISPLAY_OFF	({layout.EXT2_EXP_DISPLAY_OFFSET})", text)
-        for name, value in (("OFF", 0), ("NUMBER", 1), ("BAR", 2)):
+        for name, value in (("OFF", 0), ("NUMBER", 1), ("BAR", 2), ("DETAILS", 3)):
             self.assertRegex(text, rf"#define EXP_DISPLAY_{name}\s+\({value}\)")
 
 

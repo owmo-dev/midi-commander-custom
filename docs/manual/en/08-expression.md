@@ -348,11 +348,12 @@ Setting a volume or a wah by foot, you hear the result but not the number, and y
 - **Off**, as before: nothing shows.
 - **Number**: `EXP1 64`, the value just sent.
 - **Bar**: the pedal's number and a bar that fills from the heel to the toe.
+- **Bar+Label** shows the button’s four-character `Label` beside the bar when the pedal moves after an `Exp` command selects its target. Changing pages keeps the assignment and its label. With the default target or an unnamed button, the bar reads `EXP1` or `EXP2`.
 
 It goes 1.5 seconds after the pedal stops, like the tempo readout, and the bank's info line comes back. Both pedals can show; the one that moved last has the line.
 
 - It shows the value sent, 0 to 127, after the curve, the output range and inversion: the number the device receives. A 14-bit CC or Pitch Bend shows its upper 7 bits.
-- Only a movement shows it. Entering a bank with [Send on entering a bank](#sending-the-position-on-entering-a-bank) sends the position without showing it, and so does a pedal on Wheel or Arrows, or in a bank that silences it. Speed shows the value that sets the speed.
+- Entering a bank with [Send on entering a bank](#sending-the-position-on-entering-a-bank) sends the position without showing it, and so does a pedal on Wheel or Arrows, or in a bank that silences it. Speed shows the value that sets the speed.
 - While the pedal [catches up with a CC](#picking-up-a-cc-without-a-jump) nothing is sent, and nothing shows.
 - It is off by default, so it does not cover a `$` value, the setlist's place or a Kemper's rig in the info line unless you ask for it.
 
@@ -362,7 +363,7 @@ In the demo pedal 1 shows a bar and pedal 2 a number.
 
 <details><summary>Under the hood</summary>
 
-It is kept in byte 5 of the second extension area's header, two bits per pedal, pedal 1 in the low ones: 0 Off, 1 Number, 2 Bar, and 3, erased flash, Off. The tools write the area for it even when nothing else needs it. Older firmware does not read the byte and shows nothing. The value is drawn from the main loop once the last screen has gone out, so a fast sweep shows its latest value and never waits for the display.
+It is kept in byte 5 of the second extension area's header, two bits per pedal, pedal 1 in the low ones: 0 Off, 1 Number, 2 Bar, and 3 Bar+Label. An erased byte (`0xFF`) means both displays are off. The tools write the area for it even when nothing else needs it. Older firmware does not read the byte and shows nothing. The value is drawn from the main loop once the last screen has gone out, so a fast sweep shows its latest value and never waits for the display.
 
 </details>
 
@@ -389,7 +390,7 @@ Optional; two rows, `Pedal` 1 and 2.
 | `Output` | CC, PitchBend, CC14, Speed, Wheel, Arrows, Switches, Zones or SysEx 0–15 | What the pedal sends: its CC with 7 bits, Pitch Bend, a 14-bit CC pair, [a stored SysEx message](#a-sysex-parameter) with its value in it, nothing but the [speed of the LFOs and sequences](#speed-of-the-lfos-and-sequences), or [scrolling on the computer](#scrolling-on-the-computer); Switches for a [box of switches](#a-box-of-switches-on-the-jack) in the jack; Zones to [tap a button in each zone](#zones-a-stepped-pedal). Default CC. |
 | `Send_On_Bank` | Y / N | Send the pedal's position as a bank is entered, after its enter commands. Default N. Firmware 0.87. |
 | `Takeover` | Jump, CatchUp or Scaled | What the pedal does with a CC left at another value than the foot's: jump to the foot, wait for the foot to reach it, or go on from it. Default Jump. Firmware 1.18. |
-| `Display` | Off, Number or Bar | What the display shows while the pedal moves: nothing, the value sent, or a bar. Default Off. Firmware 1.29. |
+| `Display` | Off, Number, Bar or Bar+Label | Pedal readout. Bar+Label adds the assigning button’s label to the bar. Default Off. |
 | `Box_1`, `Box_2`, `Box_3` | None, 1–4, A–D, Down or Up | With `Output` Switches, the switch each of the box's switches holds down. Default None. Firmware 1.10. |
 | `Zones` | 2 to 8 of None, 1–4, A–D | With `Output` Zones, the button entering each zone taps, heel first, apart by spaces: `1 2 None 4`. Firmware 1.31. |
 

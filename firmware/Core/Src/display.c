@@ -71,7 +71,6 @@
 #define BANK_NAME_X     (2)     // some panels hide the leftmost columns
 #define NAME_W		(44)	// 4 large chars
 #define INFO_X		(50)
-#define PEDAL_BAR_X	(60)	// an expression pedal's bar, after its number
 #define CELL10_W	(25)	// five cells to a row
 #define CELL10_X	(1)	// the 125 px they take, in the middle
 #define LABEL10_FONT	Font_6x8
@@ -104,7 +103,8 @@ static uint8_t overlay_bar = 0xFF;
 // A pedal's value waiting for the screen to be free (1.29): pedal + 1, 0 none
 static uint8_t pedal_pending = 0;
 static uint8_t pedal_value;
-static bool pedal_bar;
+static uint8_t pedal_mode;
+static const uint8_t *pedal_label;
 static uint32_t pedal_tick;
 
 /*
@@ -1109,9 +1109,10 @@ static void draw_overlay(void){
 	}
 	ssd1306_WriteString(overlay_msg, Font_7x10, White);
 	if(overlay_bar != 0xFF){
-		// A frame from the pedal's number to the edge, filled up to the value
-		ssd1306_DrawRectangle(PEDAL_BAR_X, 7, SCREEN_SHOWN_W - 1, 15, White);
-		fill_rect(PEDAL_BAR_X + 2, 9, (uint8_t)(overlay_bar * (SCREEN_SHOWN_W - PEDAL_BAR_X - 4) / 127U), 5, White);
+		uint8_t x = (uint8_t)(INFO_X + strlen(overlay_msg) * Font_7x10.FontWidth + 3);
+		// Leave a gap between the label and the bar.
+		ssd1306_DrawRectangle(x, 7, SCREEN_SHOWN_W - 1, 15, White);
+		fill_rect(x + 2, 9, (uint8_t)(overlay_bar * (SCREEN_SHOWN_W - x - 4) / 127U), 5, White);
 	}
 	mark_put();
 	ssd1306_UpdateScreen();
@@ -1267,9 +1268,10 @@ void display_show_cc(uint8_t cc, uint8_t value){
  * The value is only noted here; display_task draws the latest one once the
  * last screen has gone out, so a sweep never waits on the display.
  */
-void display_show_pedal(uint8_t pedal, uint8_t value, bool bar){
+void display_show_pedal(uint8_t pedal, uint8_t value, uint8_t mode, const uint8_t *label){
 	pedal_value = value;
-	pedal_bar = bar;
+	pedal_mode = mode;
+	pedal_label = label;
 	pedal_tick = HAL_GetTick();
 	pedal_pending = (uint8_t)(pedal + 1U);
 }
@@ -1280,12 +1282,16 @@ static void draw_pedal(void){
 	pedal_pending = 0;
 	// Kept waiting by the tuner or the banner: gone by now
 	if(HAL_GetTick() - pedal_tick > OVERLAY_MS) return;
-	if(pedal_bar){
+	if(pedal_mode == EXP_DISPLAY_DETAILS){
+		msg[0] = 0;
+		if(pedal_label) label_text(pedal_label, msg);
+		if(!msg[0]) snprintf(msg, sizeof(msg), "EXP%u", (unsigned)(pedal + 1U));
+	} else if(pedal_mode == EXP_DISPLAY_BAR){
 		snprintf(msg, sizeof(msg), "%u", (unsigned)(pedal + 1U));
 	} else {
 		snprintf(msg, sizeof(msg), "EXP%u %u", (unsigned)(pedal + 1U), (unsigned)pedal_value);
 	}
-	show_readout(msg, pedal_bar ? pedal_value : 0xFF);
+	show_readout(msg, pedal_mode >= EXP_DISPLAY_BAR ? pedal_value : 0xFF);
 }
 
 // A relative PC's program: by its preset name when it has one (1.20)

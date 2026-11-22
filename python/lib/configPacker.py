@@ -59,7 +59,7 @@ EXP_OUTPUT_CHOICES = (["CC", "PitchBend", "CC14", "Speed", "Wheel", "Arrows", "S
 # How a pedal takes over a CC left at another value (firmware 1.18)
 EXP_TAKEOVERS = {"JUMP": 0, "CATCHUP": 1, "SCALED": 2}
 # What the display shows while a pedal moves (firmware 1.29)
-EXP_DISPLAYS = {"OFF": 0, "NUMBER": 1, "BAR": 2}
+EXP_DISPLAYS = {"OFF": 0, "NUMBER": 1, "BAR": 2, "BAR+LABEL": 3, "DETAILS": 3}
 EXP_DEFAULTS = {
     "Min_ADC": "80", "Max_ADC": "3900", "Curve": "Linear", "Invert": "N",
     "Channel": "Global", "Toe_Button": "None", "Heel_Button": "None",
@@ -698,11 +698,14 @@ def expression_display(df) -> int:
             if text in ("", "NAN", "NONE", "N", "NO"):
                 text = "OFF"
             if text not in EXP_DISPLAYS:
-                raise ValueError(f"Expression pedal {pedal}: Display must be Off, Number or Bar, "
+                raise ValueError(f"Expression pedal {pedal}: Display must be Off, Number, Bar or Bar+Label, "
                                  f"not {row.get('Display')!r}")
             modes[int(pedal) - 1] = EXP_DISPLAYS[text]
     if modes == [0, 0]:
         return 0xFF
+    # Both pedals on Bar+Label would otherwise collide with the erased Off byte.
+    if modes == [3, 3]:
+        return 0x0F
     return 0xF0 | modes[0] | modes[1] << 2
 
 

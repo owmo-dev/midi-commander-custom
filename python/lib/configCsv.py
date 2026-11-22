@@ -48,6 +48,9 @@ def read_config_csv(path: str) -> dict:
         ).dropna(how="all")
         df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
         df.columns = df.columns.str.strip()
+        if name == "Expression_Settings" and "Display" in df:
+            legacy = df["Display"].str.strip().str.casefold().eq("details")
+            df.loc[legacy, "Display"] = "Bar+Label"
         # Older CSVs put the bank switch and its state together in KeyMode.
         for mode in (col for col in df.columns if col.endswith("KeyMode_(Key)")):
             prefix = mode[:-len("KeyMode_(Key)")]

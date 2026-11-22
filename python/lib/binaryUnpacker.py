@@ -108,7 +108,7 @@ from lib.cmdBinaryPacker import (
 EXP_CURVE_NAMES = {0: "Linear", 1: "Log", 2: "Exp"}
 EXP_OUTPUT_NAMES = {0: "CC", 1: "PitchBend", 2: "CC14", 3: "Speed", 4: "Wheel", 5: "Arrows", 6: "Switches"}
 EXP_TAKEOVER_NAMES = {0: "Jump", 1: "CatchUp", 2: "Scaled"}
-EXP_DISPLAY_NAMES = {0: "Off", 1: "Number", 2: "Bar"}
+EXP_DISPLAY_NAMES = {0: "Off", 1: "Number", 2: "Bar", 3: "Bar+Label"}
 EXP_OUT_SWITCHES = 6
 
 SLOT_NAMES = [chr(ord("A") + i) for i in range(MIDI_NUM_COMMANDS_PER_SWITCH)]
@@ -679,7 +679,9 @@ def unpack_expression_settings(data: bytes) -> pd.DataFrame:
     # Takeover (firmware 1.18) lives in the second extension area's header
     ext = bytes(data[EXT2_OFFSET:EXT2_OFFSET + EXT2_MAP_OFFSET])
     takeover = ext[EXT2_TAKEOVER_OFFSET] if ext.startswith(EXT2_MARKER) else 0xFF
-    shows = ext[EXT2_EXP_DISPLAY_OFFSET] if ext.startswith(EXT2_MARKER) else 0xFF   # and Display (1.29)
+    shows = ext[EXT2_EXP_DISPLAY_OFFSET] if ext.startswith(EXT2_MARKER) else 0xFF
+    if shows == 0xFF:
+        shows = 0  # Erased or absent: both pedals off.
     # and the middle points (1.41)
     points = b""
     if ext.startswith(EXT2_MARKER):

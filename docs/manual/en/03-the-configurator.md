@@ -123,7 +123,7 @@ Everything about the two expression pedals, per pedal: end points, response curv
 - **Output**, what it sends: a CC, Pitch Bend or a 14-bit CC, the [speed of the LFOs and sequences](08-expression.md#speed-of-the-lfos-and-sequences), `Wheel` or `Arrows` to [scroll on the computer](08-expression.md#scrolling-on-the-computer), `Switches` for [a box of switches](08-expression.md#a-box-of-switches-on-the-jack), `Zones` for [a stepped pedal](08-expression.md#zones-a-stepped-pedal), or a [SysEx string](08-expression.md#a-sysex-parameter). The last two rows of the pedal set the box's three switches and the zones' buttons.
 - **Send on entering a bank**; see [Sending the position on entering a bank](08-expression.md#sending-the-position-on-entering-a-bank).
 - How it takes over a CC left at another value, `Jump`, `CatchUp` or `Scaled`; see [Picking up a CC without a jump](08-expression.md#picking-up-a-cc-without-a-jump).
-- Its value on the display while it moves, `Off`, `Number` or `Bar`; see [Its value on the display](08-expression.md#its-value-on-the-display).
+- Its value on the display while it moves, `Off`, `Number`, `Bar` or `Bar+Label`; see [Its value on the display](08-expression.md#its-value-on-the-display).
 
 **Connect live view** shows the pedal position and the CC being sent, read from the pedal in real time.
 

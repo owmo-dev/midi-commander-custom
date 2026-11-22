@@ -159,8 +159,7 @@ uint8_t flash_settings_exp_takeover(uint8_t pedal){
 
 uint8_t flash_settings_exp_display(uint8_t pedal){
 	const uint8_t *t = ext2_part(EXT2_EXP_DISPLAY_OFF);
-	uint8_t mode = t ? (*t >> (2U * pedal)) & 3U : EXP_DISPLAY_OFF;
-	return mode <= EXP_DISPLAY_BAR ? mode : EXP_DISPLAY_OFF;
+	return (t && *t != 0xFF) ? (*t >> (2U * pedal)) & 3U : EXP_DISPLAY_OFF;
 }
 
 const uint8_t *flash_settings_exp_points(uint8_t pedal){

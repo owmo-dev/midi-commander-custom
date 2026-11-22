@@ -207,6 +207,7 @@ typedef struct {
   bool active;
   uint8_t cc;
   uint8_t channel;      // 1-16, 0 = keep the pedal's own
+  const uint8_t *label;
 } exp_override_t;
 
 static exp_override_t overrides[EXP_PEDAL_COUNT];
@@ -536,7 +537,7 @@ static send_kind_t send_kind(const exp_cal_t *c, uint8_t cc, bool own)
  * change: the new target is not sent the position it was left at, so a pedal
  * moved from the wah to the volume does not jump the volume.
  */
-void expression_set_target(uint8_t pedal, uint8_t cc, uint8_t channel)
+void expression_set_target(uint8_t pedal, uint8_t cc, uint8_t channel, const uint8_t *label)
 {
   if (pedal >= EXP_PEDAL_COUNT) return;
   exp_override_t *o = &overrides[pedal];
@@ -546,6 +547,7 @@ void expression_set_target(uint8_t pedal, uint8_t cc, uint8_t channel)
       return;
   }
   o->active = true;
+  o->label = label;
   o->cc = cc;
   o->channel = (channel <= 16U) ? channel : 0U;
 }
@@ -1092,7 +1094,8 @@ static void process_pedal(uint32_t i)
           uint8_t show = flash_settings_exp_display((uint8_t)i);
           if (show != EXP_DISPLAY_OFF && enabled && kind != SEND_SCROLL && !forced
               && was != 0xFFU && was != p->last_sent_midi) {
-              display_show_pedal((uint8_t)i, p->last_sent_midi, show == EXP_DISPLAY_BAR);
+              display_show_pedal((uint8_t)i, p->last_sent_midi, show,
+                                 overrides[i].active ? overrides[i].label : NULL);
           }
       }
   }

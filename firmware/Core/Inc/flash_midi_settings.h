@@ -359,9 +359,10 @@ extern uint8_t *pCombos;		// Two switch combinations, COMBO_STRIDE bytes each
 #define EXP_TAKEOVER_CATCH		(1)	// nothing until the foot crosses the value
 #define EXP_TAKEOVER_SCALE		(2)	// from the value to the end it heads for
 #define EXT2_EXP_DISPLAY_OFF	(5)
-#define EXP_DISPLAY_OFF			(0)	// nothing; also erased flash (3)
+#define EXP_DISPLAY_OFF			(0)	// nothing; an erased display byte also turns both pedals off
 #define EXP_DISPLAY_NUMBER		(1)	// "EXP1 64" in the info line, for a moment
 #define EXP_DISPLAY_BAR			(2)	// a bar there instead
+#define EXP_DISPLAY_DETAILS		(3)	// the assigning button's label and a bar
 #define EXT2_CLOCK_OUT_OFF		(6)
 #define CLOCK_BURST_MAX			(32)	// [7]
 #define EXT2_MAP_OFF			(16)

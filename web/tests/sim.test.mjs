@@ -2166,6 +2166,54 @@ test("an expression pedal shows its value on the display while it moves, as a ba
   assert.ok(infoLineIs(off, "1/10>S01"), "Off: the info line as before");
 });
 
+test("Bar+Label shows the active label only on movement, across pages and after reset", async () => {
+  const sim = simWithDemo(await flashWith(packDemo([
+    "g = d['Global_Settings']",
+    "g.loc[g.Label == 'Bank_Switch_Mode', 'Value'] = 'Page+MIDI'",
+    "g.loc[g.Label == 'Bank_Preview', 'Value'] = '0'",
+    "d['Setlist'] = d['Setlist'].iloc[:2].assign(Bank_Number=['0', '31'])",
+    "d.pop('BankEnter_Settings')",
+    "e = d['Expression_Settings']",
+    "cols = ['Output', 'Takeover', 'Auto_Button', 'Toe_Button', 'Heel_Button', 'Display']",
+    "e.loc[:, cols] = ['CC', 'Jump', '', '', '', 'Bar+Label']",
+    "b = d['Button_Settings']",
+    "for switch, label, pedal in [('1', 'WAH', '1'), ('2', '', '2')]:",
+    "    row = (b.Bank_Number == '31') & (b.Button_Identifier == switch)",
+    "    b.loc[row, b.columns[2:]] = ''",
+    "    b.loc[row, ['Label', 'A_CommandType', 'A_Channel_(PC/CC/Note/PB)', 'A_Number_(PC/CC/Note)', 'A_OnValue_(CC/PB)', 'A_Toggle_(CC/PB/Note)']] = [label, 'Exp', '16', '127', pedal, 'Y']",
+  ].join("\n"))));
+  const move = (pedal, value) => { sim.pedal(pedal, value); sim.run(350); };
+  sim.run(10000);
+  move(0, 1300);
+  assert.ok(textAt(sim, 50, 6, "EXP1"));
+  move(1, 1300);
+  assert.ok(textAt(sim, 50, 6, "EXP2"));
+
+  tap(sim, 9);                                // open the assignment page
+  sim.run(2000);                              // the previous pedal readout has expired
+  const seen = watch(sim);
+  tap(sim, 0);
+  assert.ok(!textAt(sim, 50, 6, "WAH"), "stationary selection leaves the bar hidden");
+  assert.ok(!seen.some(m => m.startsWith("USB bf 7f ")), "selection sends no pedal CC");
+  tap(sim, 1);
+  assert.ok(!textAt(sim, 50, 6, "EXP2"), "stationary unnamed assignment");
+  move(1, 2500);
+  assert.ok(textAt(sim, 50, 6, "EXP2"), "unnamed assignment on movement");
+  tap(sim, 9);                                // return to the home page
+  move(0, 2500);
+  assert.ok(seen.some(m => m.startsWith("USB bf 7f ")), "the new target receives the movement");
+  assert.ok(textAt(sim, 50, 6, "WAH"), "pedal 1 kept its own label");
+  assert.ok(lit(sim, 74, 11) && lit(sim, 127, 11), "the bar starts after the label");
+  sim.run(2000);
+  assert.ok(!textAt(sim, 50, 6, "WAH"), "the readout expires");
+
+  tap(sim, 9);
+  tap(sim, 0);
+  assert.ok(!textAt(sim, 50, 6, "EXP1"), "stationary reset leaves the bar hidden");
+  move(0, 1300);
+  assert.ok(textAt(sim, 50, 6, "EXP1"), "next movement shows the default label");
+});
+
 test("a value inside a stored SysEx, with its Roland checksum, from a press, a toggle, a CCInc and a pedal (1.30)", async () => {
   // On DIN: the simulator keeps USB SysEx for the pedal's own answers
   // The demo's string 3, a Boss style write: 41 00 00 00 00 33 12, address 60 00 06 39, VV, CS

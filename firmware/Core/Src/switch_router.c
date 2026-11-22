@@ -417,7 +417,7 @@ static void ccinc_reset(void){
 }
 
 // Unique slot index for a command, whichever of the button's lists it came from
-static int32_t ccinc_index(const uint8_t *pRom){
+static int32_t button_command_index(const uint8_t *pRom){
 	int32_t per_set = MIDI_NUM_BANKS * MIDI_NUM_SWITCHES * MIDI_NUM_COMMANDS_PER_SWITCH;
 	if(pRom >= pSwitchCmds && pRom < pSwitchCmds + per_set * MIDI_ROM_CMD_SIZE){
 		return (pRom - pSwitchCmds) / MIDI_ROM_CMD_SIZE;
@@ -440,7 +440,7 @@ static void send_ccinc(uint8_t *pRom, bool repeat){
 	uint8_t down = (pRom[3] & 0x80) != 0;
 	uint8_t start = pRom[3] & 0x7F;
 
-	int32_t slot = ccinc_index(pRom);
+	int32_t slot = button_command_index(pRom);
 	uint8_t current = start;
 	if(slot >= 0){
 		if(ccinc_value[slot] == 0xFF) ccinc_value[slot] = start;
@@ -838,12 +838,20 @@ static inline uint16_t cmd_value14(const uint8_t *pRom){
  * Exp: point an expression pedal somewhere else. A toggling one does it while
  * its button is on and gives the pedal back its own target when switched off.
  */
+static const uint8_t *exp_label(const uint8_t *cmd){
+	int32_t slot = button_command_index(cmd);
+	if(slot < 0) return NULL;
+	// Short, long and double lists share one label per bank and switch.
+	uint32_t button = ((uint32_t)slot / MIDI_NUM_COMMANDS_PER_SWITCH) % (MIDI_NUM_BANKS * MIDI_NUM_SWITCHES);
+	return pButtonLabels + button * BUTTON_LABEL_LEN;
+}
+
 static void send_exp(const uint8_t *pRom, uint8_t toggleState){
 	uint8_t pedal = pRom[1] & 0x7F;
 	if((pRom[1] & 0x80) && !toggleState){
-		expression_set_target(pedal, EXP_TARGET_RESET, 0);
+		expression_set_target(pedal, EXP_TARGET_RESET, 0, NULL);
 	} else {
-		expression_set_target(pedal, pRom[2], pRom[3]);
+		expression_set_target(pedal, pRom[2], pRom[3], exp_label(pRom));
 	}
 }
 
@@ -2576,7 +2584,7 @@ uint8_t sw_button_value(uint8_t bank, uint8_t sw, uint8_t *value){
 			return LIVE_PROGRAM;
 		case CMD_CCINC_NIBBLE: {
 			// Before the first press, the value it starts from
-			int32_t slot = ccinc_index(p);
+			int32_t slot = button_command_index(p);
 			*value = (slot >= 0 && ccinc_value[slot] != 0xFF) ? ccinc_value[slot] : (uint8_t)(p[3] & 0x7F);
 			return LIVE_NUMBER;
 		}

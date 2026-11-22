@@ -2,6 +2,10 @@
 
 Firmware versions are shown on the display at boot and reported by the tools.
 
+## Unreleased
+
+- **Expression display.** The new `Bar+Label` option shows the assigning button’s label beside the pedal bar when the pedal moves. Global assignments and unnamed buttons show `EXP1` or `EXP2`.
+
 ## 1.45.2
 
 - **Bank switches.** The new `Page` and `Page+MIDI` modes let Bank Up and Down cycle through pages in bank or setlist order. Expression pedal assignments stay active across pages. `Page+MIDI` also runs the switch’s short- or long-press command list.

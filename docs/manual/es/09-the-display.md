@@ -30,7 +30,7 @@ Algunas cosas ocupan la pantalla, o parte de ella, un momento y luego devuelven 
 | Una cuenta atrás (`Wait` `Count`) | los tiempos que faltan en lugar del nombre del banco, de `IN 4` a `IN 1`, hasta que sale la lista ([A tiempo](06-commands.md#a-tiempo)) |
 | MIDI que entra por USB, con `MIDI_Monitor` activado | una marca en la esquina de arriba a la derecha; con `In` o `All`, el mensaje en toda la línea de arriba durante dos segundos ([Monitor MIDI](#monitor-midi)) |
 | Un botón de CC relativo | el número de CC y el valor que se acaba de enviar, en lugar de la línea de información durante 1,5 segundos: `CC7=69`, o `C120=127` para números de CC de tres cifras |
-| Un pedal de expresión moviéndose, con `Display` activado | el valor que envía, `EXP1 64`, o el número del pedal y una barra, en lugar de la línea de información hasta 1,5 segundos después de pararse ([Su valor en la pantalla](08-expression.md#su-valor-en-la-pantalla)) |
+| Un pedal de expresión moviéndose, con `Display` activado | el valor que envía, `EXP1 64`, o una barra con el número del pedal o la etiqueta del botón que asignó el destino, en lugar de la línea de información hasta 1,5 segundos después de pararse ([Su valor en la pantalla](08-expression.md#su-valor-en-la-pantalla)) |
 | Un botón de preset siguiente o anterior | el [nombre](#nombres-de-preset) del nuevo programa, o su número, como `PC 6` |
 | Al elegir un setlist (`Setlist`) | `SETLIST 2` y el nombre del setlist, a pantalla completa; `NO SONGS` si no tiene canciones ([Varios setlists](04-banks.md#varios-setlists)) |
 | Al bloquear o desbloquear los pulsadores | `LOCKED` o `UNLOCKED`; luego `LOCKED` se queda en la línea de información ([Bloquear los pulsadores](05-buttons.md#bloquear-los-pulsadores)) |

@@ -125,7 +125,7 @@ Todo sobre los dos pedales de expresión, pedal a pedal: extremos, curva de resp
 - **Output**, qué envía: un CC, Pitch Bend o un CC de 14 bits, la [velocidad de los LFO y las secuencias](08-expression.md#velocidad-de-los-lfo-y-las-secuencias), `Wheel` o `Arrows` para [hacer scroll en el ordenador](08-expression.md#hacer-scroll-en-el-ordenador), `Switches` para [una caja de pulsadores](08-expression.md#una-caja-de-pulsadores-en-el-jack), `Zones` para [un pedal por tramos](08-expression.md#zonas-un-pedal-por-tramos), o una [cadena SysEx](08-expression.md#un-parámetro-por-sysex). Las dos últimas filas del pedal ponen los tres pulsadores de la caja y los botones de las zonas.
 - **Send on entering a bank**; mira [Enviar la posición al entrar en un banco](08-expression.md#enviar-la-posición-al-entrar-en-un-banco).
 - Cómo recoge un CC que se quedó en otro valor, `Jump`, `CatchUp` o `Scaled`; mira [Recoger un CC sin saltos](08-expression.md#recoger-un-cc-sin-saltos).
-- Su valor en la pantalla mientras se mueve, `Off`, `Number` o `Bar`; mira [Su valor en la pantalla](08-expression.md#su-valor-en-la-pantalla).
+- Su valor en la pantalla mientras se mueve, `Off`, `Number`, `Bar` o `Bar+Label`; mira [Su valor en la pantalla](08-expression.md#su-valor-en-la-pantalla).
 
 **Connect live view** enseña la posición del pedal y el CC que se está enviando, leídos de la pedalera en tiempo real.
 

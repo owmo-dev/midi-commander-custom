@@ -2679,7 +2679,7 @@ class MidiCommanderGUI(ctk.CTk):
             show = ctk.CTkFrame(box, fg_color="transparent")
             show.pack(fill="x", padx=8, pady=(0, 8))
             ctk.CTkLabel(show, text="While it moves, the display shows the value").pack(side="left")
-            w["display"] = Option(show, ["Off", "Number", "Bar"], clean(r.get("Display")) or "Off", width=100)
+            w["display"] = Option(show, ["Off", "Number", "Bar", "Bar+Label"], clean(r.get("Display")) or "Off", width=100)
             w["display"].pack(side="left", padx=(6, 2))
             ctk.CTkLabel(show, text="in the info line, for a moment").pack(side="left", padx=(6, 2))
 

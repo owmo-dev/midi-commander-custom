@@ -348,11 +348,12 @@ Al ajustar un volumen o un wah con el pie oyes el resultado pero no el número, 
 - **Off**, como siempre: no se muestra nada.
 - **Number**: `EXP1 64`, el valor que se acaba de enviar.
 - **Bar**: el número del pedal y una barra que se llena del talón a la punta.
+- **Bar+Label** muestra la etiqueta de cuatro caracteres (`Label`) del botón junto a la barra al mover el pedal después de que un comando `Exp` haya seleccionado su destino. Al cambiar de página se conservan el destino y su etiqueta. Con el destino predeterminado o un botón sin etiqueta se muestra `EXP1` o `EXP2`.
 
 Se va 1,5 segundos después de que el pedal se pare, como la lectura del tempo, y vuelve la línea de información del banco. Pueden mostrarse los dos pedales; la línea es del último que se movió.
 
 - Muestra el valor enviado, de 0 a 127, después de la curva, el rango de salida y la inversión: el número que recibe el aparato. Un CC de 14 bits o el Pitch Bend muestran sus 7 bits altos.
-- Solo lo muestra un movimiento. Al entrar en un banco con [Enviar la posición al entrar en un banco](#enviar-la-posición-al-entrar-en-un-banco) la posición se envía sin mostrarse, y lo mismo un pedal en Wheel o Arrows, o en un banco que lo silencia. Speed muestra el valor que fija la velocidad.
+- Al entrar en un banco con [Enviar la posición al entrar en un banco](#enviar-la-posición-al-entrar-en-un-banco) la posición se envía sin mostrarse, y lo mismo un pedal en Wheel o Arrows, o en un banco que lo silencia. Speed muestra el valor que fija la velocidad.
 - Mientras el pedal [recoge un CC](#recoger-un-cc-sin-saltos) no se envía nada, y no se muestra nada.
 - Viene apagado, así que no tapa un valor `$`, el lugar en el setlist ni el rig de un Kemper en la línea de información si no lo pides.
 
@@ -362,7 +363,7 @@ En la demo el pedal 1 muestra una barra y el pedal 2 un número.
 
 <details><summary>Por dentro</summary>
 
-Se guarda en el byte 5 de la cabecera de la segunda área de extensión, dos bits por pedal, el pedal 1 en los bajos: 0 Off, 1 Number, 2 Bar, y 3, flash borrada, Off. Las herramientas escriben el área para él aunque nada más la necesite. El firmware anterior no lee ese byte y no muestra nada. El valor se dibuja desde el bucle principal en cuanto ha salido la pantalla anterior, así que un barrido rápido muestra su último valor y nunca espera a la pantalla.
+Se guarda en el byte 5 de la cabecera de la segunda área de extensión, dos bits por pedal, el pedal 1 en los bajos: 0 Off, 1 Number, 2 Bar y 3 Bar+Label. Un byte borrado (`0xFF`) desactiva ambas lecturas. Las herramientas escriben el área para él aunque nada más la necesite. El firmware anterior no lee ese byte y no muestra nada. El valor se dibuja desde el bucle principal en cuanto ha salido la pantalla anterior, así que un barrido rápido muestra su último valor y nunca espera a la pantalla.
 
 </details>
 
@@ -389,7 +390,7 @@ Opcional; dos filas, `Pedal` 1 y 2.
 | `Output` | CC, PitchBend, CC14, Speed, Wheel, Arrows, Switches, Zones o SysEx 0–15 | Qué envía el pedal: su CC con 7 bits, Pitch Bend, una pareja de CC de 14 bits, [un mensaje SysEx guardado](#un-parámetro-por-sysex) con su valor dentro, nada más que la [velocidad de los LFO y las secuencias](#velocidad-de-los-lfo-y-las-secuencias), o [scroll en el ordenador](#hacer-scroll-en-el-ordenador); Switches para una [caja de pulsadores](#una-caja-de-pulsadores-en-el-jack) en el jack; Zones para [pulsar un botón en cada zona](#zonas-un-pedal-por-tramos). Por defecto CC. |
 | `Send_On_Bank` | Y / N | Enviar la posición del pedal al entrar en un banco, después de sus comandos de entrada. Por defecto N. Firmware 0.87. |
 | `Takeover` | Jump, CatchUp o Scaled | Qué hace el pedal con un CC que se dejó en un valor distinto del del pie: saltar al pie, esperar a que el pie llegue a él, o seguir desde él. Por defecto Jump. Firmware 1.18. |
-| `Display` | Off, Number o Bar | Qué muestra la pantalla mientras se mueve el pedal: nada, el valor enviado o una barra. Por defecto Off. Firmware 1.29. |
+| `Display` | Off, Number, Bar o Bar+Label | Lectura del pedal. Bar+Label añade a la barra la etiqueta del botón que asignó el destino. Por defecto Off. |
 | `Box_1`, `Box_2`, `Box_3` | None, 1–4, A–D, Down o Up | Con `Output` Switches, el pulsador que mantiene pisado cada pulsador de la caja. Por defecto None. Firmware 1.10. |
 | `Zones` | De 2 a 8 entre None, 1–4, A–D | Con `Output` Zones, el botón que pulsa la entrada en cada zona, empezando por el talón, separados por espacios: `1 2 None 4`. Firmware 1.31. |
 
