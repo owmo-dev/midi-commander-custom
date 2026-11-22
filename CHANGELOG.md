@@ -2,9 +2,10 @@
 
 Firmware versions are shown on the display at boot and reported by the tools.
 
-## Unreleased
+## 1.45.3
 
 - **Expression display.** The new `Bar+Label` option shows the assigning button’s label beside the pedal bar when the pedal moves. Global assignments and unnamed buttons show `EXP1` or `EXP2`.
+- **Firmware size.** 77,588 bytes, up 100 bytes from 1.45.2, with 236 bytes of application flash remaining.
 
 ## 1.45.2
 
