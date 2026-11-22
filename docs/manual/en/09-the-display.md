@@ -10,7 +10,7 @@ The pedal's 128×64 screen tells you where you are and what is on, at a glance f
 
 What the display shows most of the time:
 
-- **Top line, left:** the bank's name, 4 characters in large letters. The large letters are capitals only: lowercase shows as capitals there, and `` ` ``, `{`, `|`, `}` and `~` as `?`; the small ones have both.
+- **Top line, left:** the bank's name, 4 characters in large letters. The name starts two pixels farther right on the bank screen and in bank preview so its first letter is visible on panels that hide the left edge. The large letters are capitals only: lowercase shows as capitals there, and `` ` ``, `{`, `|`, `}` and `~` as `?`; the small ones have both.
 - **Top line, right:** its info line, 8 characters in small letters. A solid battery icon just above the info line, to the left of the USB MIDI activity mark, means the pedal is running on batteries. It becomes an empty outline when the power-sense reading stays below 2.28 V for two consecutive samples, one second apart. The icon disappears on USB power and when large text or a full-screen view needs the space.
 - **Below:** a 2×4 grid laid out like the pedal, buttons **1 2 3 4** on the top row and **A B C D** on the bottom. Each cell shows the button's label, or its identifier when it has none.
 - **Toggles:** the cell of a toggle button is drawn inverted while the toggle is on, so the state of the whole bank shows at a glance.

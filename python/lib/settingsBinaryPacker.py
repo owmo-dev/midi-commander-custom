@@ -56,7 +56,6 @@ GIG_VIEW_ON = 0x04  # in the banner's byte: the gig view from power on
 # And in bits 3-4 what the display shows of MIDI (1.35)
 MIDI_MONITOR_SHIFT = 3
 MIDI_MONITORS = {"OFF": 0, "MARK": 1, "IN": 2, "ALL": 3}
-BANK_NAME_OFFSET = 0x40
 SILENT_WAKE = 0x20  # and in bit 5 that the press that wakes the pedal only wakes it (1.43)
 
 def _setting(df, label) -> str:
@@ -342,8 +341,6 @@ def pack_global_settings(df):
     silent = str(df.loc["Silent_Wake", "Value"]).strip() if "Silent_Wake" in df.index else "N"
     if silent.upper().startswith("Y"):
         bin_list[GLOBAL_SETTINGS_BANNER] |= SILENT_WAKE
-    if _setting(df, "Bank_Name_Offset").upper().startswith("Y"):
-        bin_list[GLOBAL_SETTINGS_BANNER] |= BANK_NAME_OFFSET
 
     # Bank preview: Bank Up / Down only show the bank there, and one of the
     # eight buttons confirms it within this many seconds. 0 or Off = off.

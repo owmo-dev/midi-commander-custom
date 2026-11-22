@@ -10,6 +10,7 @@ import io
 import pandas as pd
 
 from lib.cmdBinaryPacker import IF_BANK_SWITCH_FIELDS
+from lib.configSchema import GLOBAL_GROUPS
 
 PAD = "," * 50
 
@@ -113,7 +114,8 @@ def write_config_csv(
         f.write("#" + PAD + "\n")
 
         f.write("* Global_Settings" + PAD + "\n")
-        df_global.to_csv(f, index=False, lineterminator="\n")
+        labels = {label for _, fields in GLOBAL_GROUPS for label, _, _ in fields}
+        df_global.loc[df_global["Label"].isin(labels), ["Label", "Value"]].to_csv(f, index=False, lineterminator="\n")
         f.write(PAD + "\n")
 
         f.write("* Bank_Naming" + PAD + "\n")

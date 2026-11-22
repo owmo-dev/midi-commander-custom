@@ -68,6 +68,7 @@
 #define LABEL_FONT	Font_7x10
 #define LABEL_CHAR_W	(7)
 #define SCREEN_SHOWN_W	(128)	// the buffer is 130 wide, the glass shows 128
+#define BANK_NAME_X     (2)     // some panels hide the leftmost columns
 #define NAME_W		(44)	// 4 large chars
 #define INFO_X		(50)
 #define PEDAL_BAR_X	(60)	// an expression pedal's bar, after its number
@@ -657,11 +658,6 @@ static void top_texts(uint8_t bank, uint8_t over_place, const char *override, co
 	}
 }
 
-static uint8_t bank_name_offset(void){
-	uint8_t flags = pGlobalSettings[GLOBAL_SETTINGS_BANNER];
-	return flags != 0xFF && (flags & BANK_NAME_OFFSET) ? 2 : 0;
-}
-
 static void draw_top(uint8_t bank, uint8_t over_place, const char *override){
 	const char *text[DISPLAY_TEXT_PLACES];
 	top_texts(bank, over_place, override, text);
@@ -689,7 +685,7 @@ static void draw_top(uint8_t bank, uint8_t over_place, const char *override){
 		bank_text(bank, false, own);
 		name = own;
 	}
-	draw_text(bank_name_offset(), 0, NAME_W, name, Font_11x18);
+	draw_text(BANK_NAME_X, 0, NAME_W, name, Font_11x18);
 	ssd1306_SetCursor(INFO_X, 6);
 	if(text[DISPLAY_TEXT_INFO][0]){
 		draw_text(INFO_X, 6, SCREEN_SHOWN_W - INFO_X, text[DISPLAY_TEXT_INFO], Font_7x10);
@@ -917,7 +913,7 @@ static void draw_preview(void){
 	} else {
 		// Its own texts, live values filled in and padded to their places
 		char text[9];
-		name_x += bank_name_offset();
+		name_x += BANK_NAME_X;
 		bank_text(preview_bank, false, text);
 		snprintf(direct, sizeof(direct), "%-4s", text);
 		bank_text(preview_bank, true, text);

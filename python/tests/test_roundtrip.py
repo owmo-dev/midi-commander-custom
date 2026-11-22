@@ -341,15 +341,19 @@ class RoundTripTest(unittest.TestCase):
         d = unpacker.unpack_command(bytes(p[4:8]))
         self.assertEqual((d["KeyMode_(Key)"], d["OnValue_(CC/PB)"]), ("Up", "4"))
 
-    def test_bank_name_offset_round_trip(self):
-        settings = self.sections["Global_Settings"].copy()
-        settings.loc[len(settings)] = ["Bank_Name_Offset", "Y"]
-        packed = pack_config({**self.sections, "Global_Settings": settings})
-        expected = bytearray(self.packed)
-        expected[46] |= 0x40
-        self.assertEqual(bytes(packed), bytes(expected))
-        values = unpacker.unpack_global_settings(packed).set_index("Label")["Value"]
-        self.assertEqual(values["Bank_Name_Offset"], "Y")
+    def test_obsolete_and_unknown_globals_are_ignored_and_omitted_on_save(self):
+        from lib import webBridge
+
+        with open(SAMPLE_CSV, "rb") as f:
+            csv = f.read()
+        original = webBridge.csv_to_sections(csv)
+        for value in (b"Y", b"N"):
+            with self.subTest(value=value):
+                legacy = csv.replace(b"MIDI_Channel,", b"Bank_Name_Offset," + value + b"\nFuture_Field,42\nMIDI_Channel,", 1)
+                self.assertNotEqual(csv, legacy)
+                loaded = webBridge.csv_to_sections(legacy)
+                self.assertEqual(webBridge.pack(loaded), webBridge.pack(original))
+                self.assertEqual(webBridge.sections_to_csv(loaded), webBridge.sections_to_csv(original))
 
     def test_bank_jump_step(self):
         sections = read_config_csv(SAMPLE_CSV)

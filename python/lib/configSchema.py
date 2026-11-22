@@ -80,7 +80,6 @@ GLOBAL_GROUPS = [
     ("Configuration", [
         ("ConfigName", "Configuration name", "shown on the display at boot, 16 characters"),
         ("Boot_Banner", "Banner at power on", "the pedal's Banner Text or this name, then the version, cross the display; any switch skips it"),
-        ("Bank_Name_Offset", "Shift bank name right", "move the bank name two pixels right if its left edge is clipped"),
         ("Gig_View", "Gig view", "the song's name and info line in large letters in place of the labels; a press shows the labels for 3 s"),
         ("MIDI_Monitor", "MIDI monitor", "Mark: a mark in the display's corner as MIDI comes in over USB; In: and the last message received, for 2 s; All: received or sent"),
         ("MIDI_Channel", "MIDI channel", "used by the expression pedals"),
@@ -152,7 +151,7 @@ GLOBAL_FIELDS = {
     "MIDI_Channel": _choice(CHANNELS),
     **{label: CHECK for label in ("RealTime_Passthrough", "USB_MIDI_Thru", "Remember_State",
                                   "Setlist_Mode", "Setlist_Display", "Clock_Follow", "LED_Feedback", "Link_Toggles",
-                                  "Edit_Lock", "Bank_Name_Offset", "Gig_View", "Silent_Wake", "Kemper_Mode", "GT1000_Mode", "Skip_Same_PC")},
+                                  "Edit_Lock", "Gig_View", "Silent_Wake", "Kemper_Mode", "GT1000_Mode", "Skip_Same_PC")},
     "Bank_Up_LED_Mode": _choice(LED_MODES),
     "Bank_Down_LED_Mode": _choice(LED_MODES),
     "Exp1_CC": _int(1, 127),

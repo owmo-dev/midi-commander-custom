@@ -137,7 +137,6 @@ GLOBAL_DEFAULTS = {
     "Bank_Switch_Mode": "Bank",
     "Sleep_After_Min": "0",
     "Silent_Wake": "N",
-    "Bank_Name_Offset": "N",
     "Setlist_Mode": "N",
     "Clock_Follow": "N",
     "Clock_Output": "Both",

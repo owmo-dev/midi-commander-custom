@@ -1802,13 +1802,7 @@ class MidiCommanderGUI(ctk.CTk):
         self.global_widgets = {}
 
         by_label = {str(r["Label"]): (idx, r["Value"]) for idx, r in self.df_global.iterrows()}
-        known = {label for _, items in GLOBAL_GROUPS for label, _, _ in items}
-        groups = list(GLOBAL_GROUPS)
-        others = [(label, label, "") for label in by_label if label not in known]
-        if others:
-            groups.append(("Other", others))
-
-        for title, items in groups:
+        for title, items in GLOBAL_GROUPS:
             present = [item for item in items if item[0] in by_label]
             if not present:
                 continue

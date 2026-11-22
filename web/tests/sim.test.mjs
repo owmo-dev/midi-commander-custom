@@ -2264,18 +2264,19 @@ function largeTextAt(sim, x, y, text, inverted = false) {
   return true;
 }
 
-test("the optional two-pixel offset moves only the bank name on the bank screen and in preview", async () => {
-  for (const offset of [0, 2]) {
-    const sim = simWithDemo(await flashWith(packDemo([
-      "b = d['Bank_Naming']; b.loc[b.Bank_Number == '0', 'Bank_Name_Large'] = 'Quad'",
-      "g = d['Global_Settings']; g.loc[g.Label == 'Bank_Preview', 'Value'] = '5'",
-      `g.loc[len(g)] = ['Bank_Name_Offset', '${offset ? "Y" : "N"}']`,
-    ].join("\n"))));
+test("the bank name is inset on the bank screen and in preview regardless of the stored offset bit", async () => {
+  const packed = packDemo([
+    "b = d['Bank_Naming']; b.loc[b.Bank_Number == '0', 'Bank_Name_Large'] = 'Quad'",
+    "g = d['Global_Settings']; g.loc[g.Label == 'Bank_Preview', 'Value'] = '5'",
+  ].join("\n"));
+  for (const bit of [0, 0x40]) {
+    packed.image[46] = (packed.image[46] & ~0x40) | bit;
+    const sim = simWithDemo(await flashWith(packed));
     sim.run(10000);
-    assert.ok(largeTextAt(sim, offset, 0, "QUAD"));
+    assert.ok(largeTextAt(sim, 2, 0, "QUAD"));
     assert.ok(infoLineIs(sim, "1/10>S01"));
     tap(sim, 9);
-    assert.ok(largeTextAt(sim, 1 + offset, 1, "S01 ", true));
+    assert.ok(largeTextAt(sim, 3, 1, "S01 ", true));
   }
 });
 

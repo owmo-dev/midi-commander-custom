@@ -2,6 +2,10 @@
 
 Firmware versions are shown on the display at boot and reported by the tools.
 
+## Unreleased
+
+- The bank name now always shifts two pixels right on the bank screen and in bank preview. Both configurators accept older CSVs and save only supported global settings.
+
 ## 1.45.1 (OWMO fork)
 
 This fork release builds on firmware 1.45. Existing CSVs can be loaded as before.

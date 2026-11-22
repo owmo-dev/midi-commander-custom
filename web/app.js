@@ -763,18 +763,15 @@ function renderBanks(main) {
 function renderGlobal(main) {
   const sec = section("Global_Settings");
   const { globalGroups, globalFields } = state.schema;
-  const known = new Set(globalGroups.flatMap(([, items]) => items.map(([l]) => l)));
   const rowFor = (label) => {
     let row = sec.rows.find((r) => r[0] === label);
     if (!row) { row = [label, ""]; sec.rows.push(row); }
     return row;
   };
   const present = new Set(sec.rows.map((r) => r[0]));
-  const others = [...present].filter((l) => !known.has(l));
-  const groups = [...globalGroups, ...(others.length ? [["Other", others.map((l) => [l, l, ""])]] : [])];
-  main.append(h("div", { class: "global" }, groups.map(([group, items]) => h("section", { class: "card" },
+  main.append(h("div", { class: "global" }, globalGroups.map(([group, items]) => h("section", { class: "card" },
     h("h3", {}, group),
-    items.filter(([label]) => present.has(label) || group !== "Other").map(([label, name, hint]) => {
+    items.map(([label, name, hint]) => {
       const spec = globalFields[label] || { kind: "text", max: 64 };
       const row = present.has(label) ? rowFor(label) : null;
       const ctl = fieldControl(spec, () => (row ? row[1] : ""), (v) => { const r = rowFor(label); if (r[1] !== v) { r[1] = v; changed(); } });
