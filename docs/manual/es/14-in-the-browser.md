@@ -4,7 +4,7 @@
 
 El configurador web hace en una página del navegador lo mismo que el configurador de escritorio y las herramientas de línea de comandos: editar una configuración, leer y escribir los slots de la pedalera, hacer copias de seguridad, tocar la pedalera desde la pantalla, mostrar en grande para el escenario la canción en la que estás y actualizar su firmware. Sin instalar nada: ni Python ni `dfu-util`. Y sin pedalera, ejecuta en la página el propio firmware de la pedalera: mira [Sin pedalera](#sin-pedalera).
 
-Para el firmware de OWMO, [ejecuta el configurador web de este repositorio](#ejecutarlo-desde-el-repositorio).
+**https://charles5150.github.io/midi-commander-custom/**
 
 Hace falta un navegador con Web MIDI y WebUSB: **Chrome**, **Edge** u **Opera**, en un ordenador. Safari no tiene ninguno de los dos; en un iPad, mira [En un iPad o un iPhone](#en-un-ipad-o-un-iphone). Firefox tiene Web MIDI, mediante un complemento de permiso del sitio que ofrece la primera vez que la página lo pide, pero no WebUSB, así que la actualización del firmware necesita Chrome, Edge u Opera. La página ejecuta dentro del navegador el mismo código Python de las herramientas, con [Pyodide](https://pyodide.org), así que una configuración se comprueba y se empaqueta exactamente igual que en el configurador, y los ficheros CSV son los mismos: uno guardado en uno se abre en el otro. La primera visita descarga unos 20 MB, Python y pandas, que el navegador guarda; a partir de ahí abre en unos segundos.
 

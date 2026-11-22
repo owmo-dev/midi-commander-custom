@@ -1,10 +1,14 @@
 # Midi Commander Custom Firmware
 
+This is a fork of Charles5150’s custom firmware for the MeloAudio MIDI Commander. I use OpenAI’s Codex to adapt it to my creative needs. [Charles5150’s project](https://github.com/Charles5150/midi-commander-custom)
+
+**Use at your own discretion.** I can’t guarantee this firmware will work on every device.
+
 Custom firmware and configuration tools for the **MeloAudio Midi Commander** foot controller, sold in Europe as the **Harley Benton MP-100**. It turns a budget pedal into a controller that stands up to the big names: 32 banks of eight buttons, three command lists per button, setlists, tap tempo and MIDI clock, two expression pedals, labels on the display, and a configurator, on the desktop or in the browser, that talks to the pedal over USB.
 
 **[Read the user manual](docs/manual/en/README.md)** · **[Manual de usuario en español](docs/manual/es/README.md)**
 
-The OWMO fork builds on [Charles5150/midi-commander-custom](https://github.com/Charles5150/midi-commander-custom). See the [fork release notes](CHANGELOG.md#1452-owmo-fork) for the changes in 1.45.2. The upstream project is a fork of [arasan95/midi-commander-custom](https://github.com/arasan95/midi-commander-custom), which in turn builds on the original project by [harvie256](https://github.com/harvie256/midi-commander-custom). None of this would exist without their work and that of the other contributors listed in the [Acknowledgements](#acknowledgements). Thank you all.
+Charles5150’s project is a fork of [arasan95/midi-commander-custom](https://github.com/arasan95/midi-commander-custom), which in turn builds on the original project by [harvie256](https://github.com/harvie256/midi-commander-custom). None of this would exist without their work and that of the other contributors listed in the [Acknowledgements](#acknowledgements). Thank you all.
 
 The firmware replaces the stock MeloAudio one but never touches its bootloader, so you can always flash the vendor image back. Its configuration lives in the microcontroller's own flash, so the stock configuration stored in the external EEPROM is left untouched.
 
@@ -29,11 +33,11 @@ The [full list](docs/manual/en/01-what-it-does.md) has every feature; in brief:
 
 ## Quick start
 
-**In the browser:** run [this fork’s web configurator locally](docs/manual/en/14-in-the-browser.md#running-it-from-the-repository) and open it in Chrome, Edge or Opera, or [on an iPad](docs/manual/en/14-in-the-browser.md#on-an-ipad-or-iphone) in an app that adds Web MIDI, such as Web MIDI Browser. It edits, reads and writes configurations, shows the pedal live, shows the song you are on large for a tablet on a stand, with your notes, and on a computer updates the firmware, the first flash included. [Share link](docs/manual/en/14-in-the-browser.md#saving-and-writing) puts a configuration in a link to send to a bandmate or post on a forum, with nothing uploaded. No pedal yet? **Try without a pedal** runs its firmware in the page. → [In the browser](docs/manual/en/14-in-the-browser.md)
+**In the browser:** run the [local web configurator](docs/manual/en/14-in-the-browser.md#running-it-from-the-repository) in Chrome, Edge or Opera, or [on an iPad](docs/manual/en/14-in-the-browser.md#on-an-ipad-or-iphone) in an app that adds Web MIDI, such as Web MIDI Browser. It edits, reads and writes configurations, shows the pedal live, shows the song you are on large for a tablet on a stand, with your notes, and on a computer updates the firmware, the first flash included. [Share link](docs/manual/en/14-in-the-browser.md#saving-and-writing) puts a configuration in a link to send to a bandmate or post on a forum, with nothing uploaded. No pedal yet? **Try without a pedal** runs its firmware in the page. → [In the browser](docs/manual/en/14-in-the-browser.md)
 
 **With the desktop tools:**
 
-1. **Flash the firmware.** Use the fork’s `.dfu` from [OWMO releases](https://github.com/owmo-dev/midi-commander-custom/releases) or [build it locally](CONTRIBUTING.md#building-the-firmware). Switch the pedal on holding **Bank Down** and **D**, then flash it with `dfu-util -d 0483:df11 --alt 0 --download midi-commander-custom-owmo-1.45.2.dfu` and switch it off and on. From then on, updates need nothing held.
+1. **Flash the firmware.** Download the `.dfu` from the [latest release](https://github.com/owmo-dev/midi-commander-custom/releases/latest). Switch the pedal on holding **Bank Down** and **D**, then flash it with `dfu-util -d 0483:df11 --alt 0 --download path/to/downloaded.dfu` and switch it off and on. From then on, updates need nothing held.
 2. **Install the tools.** Download [the repository as a ZIP](https://github.com/owmo-dev/midi-commander-custom/archive/refs/heads/main.zip) and unzip it, and install [Python 3.12](https://www.python.org/downloads/).
 3. **Configure it.** Double click **Start Configurator.command** on macOS or **Start Configurator.bat** on Windows, or run `./start-configurator.sh` on Linux: the first time it sets up the tools, then opens the configurator. Click **Read from Device**, edit and **Flash to Device**. The configurator opens on a demo configuration that uses every feature, worth a look first.
 
@@ -47,14 +51,11 @@ The whole story, step by step, is in [Getting started](docs/manual/en/02-getting
 - [Changelog](CHANGELOG.md): what changed in each version, and when a configuration has to be flashed again.
 - [Contributing](CONTRIBUTING.md): building the firmware, the tests, and what to keep in sync.
 
-## Still to come
-
-- Battery management has not been considered; battery operation is untested.
-
-Ideas and bug reports are welcome through the [issues](https://github.com/Charles5150/midi-commander-custom/issues/new/choose) and [discussions](https://github.com/Charles5150/midi-commander-custom/discussions).
+The upstream project accepts ideas and bug reports through its [issues](https://github.com/Charles5150/midi-commander-custom/issues/new/choose) and [discussions](https://github.com/Charles5150/midi-commander-custom/discussions).
 
 ## Acknowledgements
 
+- Charles5150 maintains the firmware, configurators and user manual that this fork builds on. [Upstream repository](https://github.com/Charles5150/midi-commander-custom)
 - @harvie256: project founder, original firmware, flash-based configuration and SysEx flashing tool
 - @eliericha: expansion to 10 commands per button, Python tooling and macOS documentation
 - @redcloud80: DMA and interrupt driven display driver

@@ -5,20 +5,6 @@ Bug reports, configuration questions and pull requests are welcome. Use the
 for bugs and feature requests, and [Discussions](https://github.com/Charles5150/midi-commander-custom/discussions)
 for questions.
 
-## OWMO fork releases
-
-The pedal reports the upstream firmware version followed by the OWMO revision.
-For example, `1.45.1` is the first OWMO release based on upstream `1.45`.
-The release tag for that build is `v1.45.1`.
-
-Keep changes intended for upstream on a feature branch based on upstream
-`main`. The OWMO version bump and release links belong on the fork’s `main`.
-In a new clone, `origin` points to the fork. Add the original project with
-`git remote add upstream https://github.com/Charles5150/midi-commander-custom.git`.
-To bring later upstream updates into the fork, run `git fetch upstream`,
-switch to the fork’s `main`, and merge `upstream/main`. Build and test the
-combined firmware before tagging the next fork release.
-
 ## Repository layout
 
 | Path | What it is |

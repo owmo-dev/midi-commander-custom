@@ -2,20 +2,20 @@
 
 Firmware versions are shown on the display at boot and reported by the tools.
 
-## 1.45.2 (OWMO fork)
+## 1.45.2
 
-- **Page and Page+MIDI bank switches.** Bank Up and Down step directly between pages in bank or setlist order. Expression assignments stay active as you move between pages. Page+MIDI also runs the switch’s short or long command list. To alternate between two pages, put both banks in the active setlist, enable **Follow the setlist**, and select **Page+MIDI** in **Global → Bank switches**. [Bank switches](docs/manual/en/04-banks.md#what-the-bank-switches-send)
-- **Battery indicator.** A solid icon shows battery power. It becomes an outline when the power-sense reading stays below 2.28 V for two consecutive samples, one second apart. The icon clears on USB power. [Display](docs/manual/en/09-the-display.md)
-- **Bank name alignment and CSV compatibility.** Bank names now sit two pixels farther right on the bank screen and in preview. Both configurators accept 1.45.1 CSV files and omit the retired alignment setting when saving.
+- **Bank switches.** The new `Page` and `Page+MIDI` modes let Bank Up and Down cycle through pages in bank or setlist order. Expression pedal assignments stay active across pages. `Page+MIDI` also runs the switch’s short- or long-press command list.
+- **Battery indicator.** A solid battery icon indicates battery power. It changes to an outline after two consecutive readings below 2.28 V, sampled one second apart. The icon disappears on USB power.
+- **Bank name alignment.** Bank names now appear two pixels farther right on the bank screen and in preview. Both configurators can open older CSV files and drop the retired alignment setting when saving.
+- **Firmware size.** 77,488 bytes, up 160 bytes from 1.45.1, with 336 bytes of application flash remaining.
 
-## 1.45.1 (OWMO fork)
+## 1.45.1
 
-This fork release builds on firmware 1.45. Existing CSVs can be loaded as before.
-
-- **Send Off only after a hold.** A short-press CC can send its On value once on press and reserve its Off value for release after the long-press threshold. [Button settings](docs/manual/en/05-buttons.md)
-- **Long press jumps.** Set it to `0` to stay on the current bank during a bank-switch hold. In **Bank+MIDI**, the configured long-press commands still run. [Bank switches](docs/manual/en/04-banks.md)
-- **Bank switches as modifiers.** The `If` command’s **Button on** and **Button off** tests can read whether **Bank Up** or **Bank Down** is physically pressed or released. [Conditional commands](docs/manual/en/06-commands.md)
-- **Shift bank name right.** This optional global setting moves the bank name two pixels right on the bank screen and in bank preview. [Global settings](docs/manual/en/12-configuration-file.md#global_settings)
+- **Momentary CC release.** Enable **Send Off only after a hold** to send the CC On value once on press. A quick tap sends no Off value. Releasing after the long-press threshold sends the configured Off value.
+- **Bank-switch long presses.** Set **Long press jumps** to `0` to stay on the current bank. In `Bank+MIDI` mode, the switch still runs its long-press commands.
+- **Bank switches as modifiers.** The `If` command’s **Button on** and **Button off** conditions can test whether Bank Up or Bank Down is physically held or released.
+- **Bank name alignment.** The optional **Shift bank name right** setting moves the name two pixels right on the bank screen and in bank preview.
+- **Firmware size.** 77,328 bytes, up 228 bytes from upstream 1.45, with 496 bytes of application flash remaining.
 
 ## Upstream history
 

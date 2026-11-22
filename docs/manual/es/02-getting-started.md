@@ -17,7 +17,7 @@ Flashear el firmware no borra tu configuración, y el bootloader de la pedalera 
 
 ## 1. Flashea el firmware
 
-La primera vez hay que poner la pedalera en su modo de actualización a mano. El firmware viene como un archivo `.dfu` ya compilado, adjunto a la [última release](https://github.com/owmo-dev/midi-commander-custom/releases/latest). Las imágenes anteriores están en la página de [releases](https://github.com/owmo-dev/midi-commander-custom/releases). Si lo prefieres, puedes compilar tú la imagen, como explica [CONTRIBUTING](../../../CONTRIBUTING.md) (en inglés); los dos caminos llegan al mismo sitio.
+La primera vez hay que poner la pedalera en su modo de actualización a mano. El firmware viene como un archivo `.dfu` ya compilado, adjunto a la [última release](https://github.com/Charles5150/midi-commander-custom/releases/latest). Las imágenes anteriores están en la página de [releases](https://github.com/Charles5150/midi-commander-custom/releases). Si lo prefieres, puedes compilar tú la imagen, como explica [CONTRIBUTING](../../../CONTRIBUTING.md) (en inglés); los dos caminos llegan al mismo sitio.
 
 1. Instala `dfu-util`:
    - macOS: `brew install dfu-util`;
@@ -53,7 +53,7 @@ Cuando tengas instaladas las herramientas del paso 2, `Update_Firmware.py` puede
 
 El configurador y las herramientas de línea de comandos son programas en Python de este repositorio.
 
-1. **Consigue los archivos.** Descarga [el repositorio en un ZIP](https://github.com/owmo-dev/midi-commander-custom/archive/refs/heads/main.zip) y descomprímelo donde quieras, o, con git, `git clone https://github.com/owmo-dev/midi-commander-custom.git`.
+1. **Consigue los archivos.** Descarga [el repositorio en un ZIP](https://github.com/Charles5150/midi-commander-custom/archive/refs/heads/main.zip) y descomprímelo donde quieras, o, con git, `git clone https://github.com/Charles5150/midi-commander-custom.git`.
 2. **Instala Python 3.12.**
    - macOS y Windows: desde [python.org](https://www.python.org/downloads/). Su instalador trae Tk, que necesita la ventana del configurador.
    - Linux: el Python 3 de tu distribución y, en Debian o Ubuntu, `sudo apt install python3-venv python3-tk`.
